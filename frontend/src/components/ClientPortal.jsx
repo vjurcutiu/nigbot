@@ -2,6 +2,8 @@
 import { useState, useEffect } from 'react';
 import api from '../services/api';
 import { Link, Routes, Route } from 'react-router-dom';
+import Marketplace from './marketplace/Marketplace';
+
 
 export default function ClientPortal() {
   const [overview, setOverview] = useState(null);
@@ -46,11 +48,15 @@ export default function ClientPortal() {
       <nav className="mt-6">
         <Link to="/client/settings" className="mr-4 underline">Settings</Link>
         <Link to="/client/reports" className="underline">Reports</Link>
+        <Link to="/client/marketplace" className="underline">
+          Marketplace
+        </Link>
       </nav>
 
       <Routes>
         <Route path="settings" element={<div>Settings page (TODO)</div>} />
         <Route path="reports" element={<div>Reports page (TODO)</div>} />
+        <Route path="marketplace" element={<Marketplace />} />
       </Routes>
     </div>
   );

@@ -3,6 +3,9 @@
 import { useState, useEffect } from 'react';
 import api from '../services/api';
 import { Link, Routes, Route } from 'react-router-dom';
+import Marketplace from './marketplace/Marketplace';
+
+
 
 export default function CandidatePortal() {
   const [profile, setProfile] = useState(null);
@@ -54,11 +57,15 @@ export default function CandidatePortal() {
       <nav>
         <Link to="/candidate/apply" className="mr-4 underline">Apply</Link>
         <Link to="/candidate/settings" className="underline">Settings</Link>
+        <Link to="/candidate/marketplace" className="underline">
+          Marketplace
+        </Link>
       </nav>
 
       <Routes>
         <Route path="apply" element={<div>Job application form (TODO)</div>} />
         <Route path="settings" element={<div>Settings page (TODO)</div>} />
+        <Route path="marketplace" element={<Marketplace />} />
       </Routes>
     </div>
   );

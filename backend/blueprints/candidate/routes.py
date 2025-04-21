@@ -34,3 +34,17 @@ def apply_job():
     application = request.json
     # TODO: Process application submission logic
     return jsonify({"status": "Application submitted", "application": application})
+
+@candidate_bp.route('/applications', methods=['GET'])
+@candidate_required
+def list_applications():
+    """Endpoint to retrieve all applications for the logged‑in candidate."""
+    user_id = session['user_id']
+    # TODO: Replace with real DB lookup, e.g.:
+    # applications = Application.query.filter_by(candidate_id=user_id).all()
+    applications = [
+        # example shape; replace with serialized model data
+        {"position": "Frontend Engineer", "company": "Acme Co.", "date_applied": "2025-03-10"},
+        {"position": "Backend Developer", "company": "Widgets Inc.", "date_applied": "2025-04-01"},
+    ]
+    return jsonify({"applications": applications})

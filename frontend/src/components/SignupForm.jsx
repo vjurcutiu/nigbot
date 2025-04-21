@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import { Link } from 'react-router-dom';
+
 
 export default function SignupForm() {
   const [form, setForm] = useState({ username: '', password: '', role: 'candidate' });
@@ -64,6 +66,13 @@ export default function SignupForm() {
         Sign Up
       </button>
       {error && <p className="text-red-600 mt-2">{error}</p>}
-    </form>
+
+      <p className="mt-4 text-sm">
+        Already have an account?{' '}
+        <Link to="/login" className="text-blue-600 hover:underline">
+          Log in
+        </Link>
+      </p>
+          </form>
   );
 }

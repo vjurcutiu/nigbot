@@ -4,6 +4,9 @@ from blueprints.auth.routes import auth_bp
 from blueprints.client.routes import client_bp
 from blueprints.candidate.routes import candidate_bp
 from db.models import db
+from db.user_models import User
+from db.candidate_models import CandidateProfile, EmploymentHistory, LegalDocument, JobApplication, Skill, CandidateSkill, Education
+
 app = Flask(__name__)
 app.config.update({
     'SECRET_KEY': 'your-secret-key',

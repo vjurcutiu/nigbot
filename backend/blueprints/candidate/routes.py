@@ -158,22 +158,22 @@ def get_candidate_full(candidate_id):
         "educations": educations,
     })
 
-@candidate_bp.route('/<int:candidate_id>/full', methods=['PUT'])
+@candidate_bp.route('/<int:candidate_id>/full', methods=['PATCH'])
 @candidate_required
 def update_candidate_full(candidate_id):
     """
-    Update a candidate and all related info by candidate ID.
-    Expects JSON payload:
+    Partially update a candidate and any of its related sections.
+    Expects JSON payload like:
     {
-      "profile": { ... },
-      "employments": [ {...}, ... ],
+      "profile": { ... },          # only fields you want to change
+      "employments": [ {...}, ... ],  # sync logic as before
       "documents": [ {...}, ... ],
       "applications": [ {...}, ... ],
       "skills": [ { "skill_id": X, "proficiency": "..." }, ... ],
       "educations": [ {...}, ... ]
     }
     """
-    data = request.get_json()
+    data = request.get_json() or {}
     candidate = CandidateProfile.query.options(
         joinedload(CandidateProfile.employments),
         joinedload(CandidateProfile.documents),
@@ -185,96 +185,59 @@ def update_candidate_full(candidate_id):
     if not candidate:
         return jsonify({"error": "Candidate not found"}), 404
 
-    # --- 1) Update top‑level profile ---
+    # 1) Top‑level profile updates
     for field in ("full_name", "email", "phone", "city", "country", "profile_picture", "summary"):
         if field in data.get("profile", {}):
             setattr(candidate, field, data["profile"][field])
 
-    # Helper to sync collections:
+    # 2) Helper to sync collections (same as your PUT version)
     def sync_collection(existing_objs, incoming_list, model, unique_key):
-        """
-        existing_objs: list of ORM instances (e.g. candidate.employments)
-        incoming_list: list of dicts from request
-        model: ORM class (e.g. EmploymentHistory)
-        unique_key: field name to match on (e.g. 'id')
-        """
-        # Index existing by key
         existing_index = {getattr(obj, unique_key): obj for obj in existing_objs if getattr(obj, unique_key) is not None}
         incoming_ids = set()
         for item in incoming_list:
             item_id = item.get(unique_key)
             if item_id and item_id in existing_index:
-                # update existing
                 obj = existing_index[item_id]
                 for k, v in item.items():
                     if hasattr(obj, k):
                         setattr(obj, k, v)
             else:
-                # new object
                 new_obj = model(**{k: v for k, v in item.items() if hasattr(model, k)})
                 existing_objs.append(new_obj)
             if item_id:
                 incoming_ids.add(item_id)
-
-        # delete removed
         for obj in list(existing_objs):
             if getattr(obj, unique_key) not in incoming_ids:
                 existing_objs.remove(obj)
 
-    # --- 2) Sync employments ---
-    sync_collection(
-        existing_objs=candidate.employments,
-        incoming_list=data.get("employments", []),
-        model=EmploymentHistory,
-        unique_key="id"
-    )
+    # 3) Sync each related list only if provided
+    if "employments" in data:
+        sync_collection(candidate.employments, data["employments"], EmploymentHistory, "id")
+    if "documents" in data:
+        sync_collection(candidate.documents, data["documents"], LegalDocument, "id")
+    if "applications" in data:
+        sync_collection(candidate.applications, data["applications"], JobApplication, "id")
 
-    # --- 3) Sync documents ---
-    sync_collection(
-        existing_objs=candidate.documents,
-        incoming_list=data.get("documents", []),
-        model=LegalDocument,
-        unique_key="id"
-    )
+    if "skills" in data:
+        existing_skills = {cs.skill_id: cs for cs in candidate.candidate_skills}
+        incoming_skill_ids = set()
+        for item in data["skills"]:
+            sid = item["skill_id"]
+            incoming_skill_ids.add(sid)
+            if sid in existing_skills:
+                existing_skills[sid].proficiency = item.get("proficiency")
+            else:
+                skill = Skill.query.get(sid)
+                if skill:
+                    candidate.candidate_skills.append(
+                        CandidateSkill(skill_id=sid, proficiency=item.get("proficiency"))
+                    )
+        for sid, cs in list(existing_skills.items()):
+            if sid not in incoming_skill_ids:
+                candidate.candidate_skills.remove(cs)
 
-    # --- 4) Sync applications ---
-    sync_collection(
-        existing_objs=candidate.applications,
-        incoming_list=data.get("applications", []),
-        model=JobApplication,
-        unique_key="id"
-    )
+    if "educations" in data:
+        sync_collection(candidate.educations, data["educations"], Education, "id")
 
-    # --- 5) Sync skills ---
-    # Here we assume skills sent as {"skill_id": 5, "proficiency": "..."}
-    existing_skills = {cs.skill_id: cs for cs in candidate.candidate_skills}
-    incoming_skill_ids = set()
-    for item in data.get("skills", []):
-        sid = item["skill_id"]
-        incoming_skill_ids.add(sid)
-        if sid in existing_skills:
-            existing_skills[sid].proficiency = item.get("proficiency")
-        else:
-            # ensure skill exists
-            skill = Skill.query.get(sid)
-            if skill:
-                candidate.candidate_skills.append(
-                    CandidateSkill(skill_id=sid, proficiency=item.get("proficiency"))
-                )
-    # remove deselected
-    for sid, cs in list(existing_skills.items()):
-        if sid not in incoming_skill_ids:
-            candidate.candidate_skills.remove(cs)
-
-    # --- 6) Sync educations ---
-    sync_collection(
-        existing_objs=candidate.educations,
-        incoming_list=data.get("educations", []),
-        model=Education,
-        unique_key="id"
-    )
-
-    # Commit all changes
     db.session.commit()
-
     return jsonify({"status": "success"}), 200

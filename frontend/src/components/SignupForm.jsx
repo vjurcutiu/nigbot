@@ -5,7 +5,18 @@ import { Link } from 'react-router-dom';
 
 
 export default function SignupForm() {
-  const [form, setForm] = useState({ username: '', password: '', role: 'candidate' });
+  const [form, setForm] = useState({
+    username: '',
+    password: '',
+    role: 'candidate',
+    full_name: '',
+    email: '',
+    phone: '',
+    city: '',
+    country: '',
+    profile_picture: '',
+    summary: '',
+  });
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
@@ -62,6 +73,79 @@ export default function SignupForm() {
           <option value="client">Client</option>
         </select>
       </label>
+
+      <label className="block mb-2">
+        Full Name
+        <input
+          name="full_name"
+          value={form.full_name}
+          onChange={handleChange}
+          className="block w-full border p-1"
+        />
+      </label>
+
+      <label className="block mb-2">
+        Email
+        <input
+          type="email"
+          name="email"
+          value={form.email}
+          onChange={handleChange}
+          className="block w-full border p-1"
+        />
+      </label>
+
+      <label className="block mb-2">
+        Phone
+        <input
+          name="phone"
+          value={form.phone}
+          onChange={handleChange}
+          className="block w-full border p-1"
+        />
+      </label>
+
+      <label className="block mb-2">
+        City
+        <input
+          name="city"
+          value={form.city}
+          onChange={handleChange}
+          className="block w-full border p-1"
+        />
+      </label>
+
+      <label className="block mb-2">
+        Country
+        <input
+          name="country"
+          value={form.country}
+          onChange={handleChange}
+          className="block w-full border p-1"
+        />
+      </label>
+
+      <label className="block mb-2">
+        Profile Picture URL
+        <input
+          name="profile_picture"
+          value={form.profile_picture}
+          onChange={handleChange}
+          className="block w-full border p-1"
+        />
+      </label>
+
+      <label className="block mb-4">
+        Summary
+        <textarea
+          name="summary"
+          value={form.summary}
+          onChange={handleChange}
+          className="block w-full border p-1"
+          rows={3}
+        />
+      </label>
+
       <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded">
         Sign Up
       </button>

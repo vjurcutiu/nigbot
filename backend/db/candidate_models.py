@@ -1,4 +1,4 @@
-from backend.db.models import db
+from db.models import db
 
 class CandidateProfile(db.Model):
     __tablename__ = 'candidate_profiles'
@@ -62,6 +62,7 @@ class CandidateSkill(db.Model):
     candidate_id = db.Column(db.Integer, db.ForeignKey('candidate_profiles.id'), primary_key=True)
     skill_id = db.Column(db.Integer, db.ForeignKey('skills.id'), primary_key=True)
     proficiency = db.Column(db.String(50), nullable=True)  # e.g., Beginner, Intermediate, Expert
+
 
 
 class Education(db.Model):

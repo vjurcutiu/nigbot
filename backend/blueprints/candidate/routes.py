@@ -1,7 +1,7 @@
 # blueprints/candidate/routes.py
 from flask import Blueprint, request, jsonify, session
 from sqlalchemy.orm import joinedload
-from backend.db.models import (
+from db.models import (
     CandidateProfile,
     EmploymentHistory,
     LegalDocument,
@@ -10,7 +10,7 @@ from backend.db.models import (
     Skill,
     Education,
 )
-from backend.db import db
+from db.models import db
 
 
 candidate_bp = Blueprint('candidate', __name__)
@@ -35,8 +35,22 @@ def candidate_dashboard():
 @candidate_required
 def get_candidate_profile():
     """Endpoint to retrieve candidate profile information."""
-    # TODO: Replace with actual profile retrieval logic
-    profile = {}
+    user_id = session.get('user_id')
+    candidate = CandidateProfile.query.filter_by(user_id=user_id).first()
+    if not candidate:
+        return jsonify({"error": "Candidate profile not found"}), 404
+
+    profile = {
+        "id": candidate.id,
+        "user_id": candidate.user_id,
+        "full_name": candidate.full_name,
+        "email": candidate.email,
+        "phone": candidate.phone,
+        "city": candidate.city,
+        "country": candidate.country,
+        "profile_picture": candidate.profile_picture,
+        "summary": candidate.summary,
+    }
     return jsonify({"profile": profile})
 
 @candidate_bp.route('/apply', methods=['POST'])

@@ -1,5 +1,5 @@
 // src/services/candidateService.js
-import api from '../api';
+import api from './api';
 
 const candidateService = {
   // 1) Dashboard data

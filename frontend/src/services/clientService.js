@@ -1,5 +1,5 @@
 // src/services/clientService.js
-import api from '../api';
+import api from './api';
 
 const clientService = {
   // 1) Client dashboard

@@ -1,8 +1,8 @@
-from backend.db.candidate_models import (
+from db.candidate_models import (
     CandidateProfile, EmploymentHistory, LegalDocument,
     JobApplication, Skill, CandidateSkill, Education
 )
-from backend.db.models import db
+from db.models import db
 from sqlalchemy.exc import SQLAlchemyError
 
 

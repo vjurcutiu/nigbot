@@ -1,7 +1,7 @@
 # blueprints/client/routes.py
 from flask import Blueprint, request, jsonify, session
-from backend.db.company_models import Company, JobPosition
-from backend.db.models import db
+from db.company_models import Company, JobPosition
+from db.models import db
 
 client_bp = Blueprint('client', __name__)
 
@@ -87,8 +87,8 @@ def get_company(company_id):
 # routes.py (continuing in the same file/blueprint)
 
 from flask import Blueprint, request, jsonify, session
-from backend.db.company_models import Company
-from backend.db.models import db
+from db.company_models import Company
+from db.models import db
 from datetime import datetime
 
 # … assume company_bp and client_required are already defined above …

@@ -1,8 +1,9 @@
 from flask import Blueprint, request, jsonify
 from db.models import db
-from backend.db.company_models import Company, JobPosition
-from backend.db.candidate_models import CandidateProfile, EmploymentHistory, LegalDocument, JobApplication, CandidateSkill, Education, Skill
-from backend.db.user_models import User
+from db.company_models import Company, JobPosition
+from db.candidate_models import CandidateProfile, EmploymentHistory, LegalDocument, JobApplication, CandidateSkill, Education, Skill
+from db.user_models import User
+from datetime import date
 
 addon_bp = Blueprint('addon', __name__, url_prefix='/extra')
 
@@ -10,33 +11,7 @@ addon_bp = Blueprint('addon', __name__, url_prefix='/extra')
 def add_items():
     """
     Endpoint to add multiple clients and candidates in batch.
-    Expects JSON payload:
-    {
-        "clients": [
-            {
-                "username": "string",
-                "password": "string",
-                "company": {
-                    "name": "string",
-                    "bio": "string",
-                    ... other Company fields ...
-                }
-            },
-            ...
-        ],
-        "candidates": [
-            {
-                "username": "string",
-                "password": "string",
-                "profile": {
-                    "full_name": "string",
-                    "email": "string",
-                    ... other CandidateProfile fields ...
-                }
-            },
-            ...
-        ]
-    }
+    Expects JSON payload with 'clients' and 'candidates' arrays.
     """
     data = request.get_json() or {}
     clients = data.get('clients', [])
@@ -50,12 +25,20 @@ def add_items():
         comp_info = c.get('company', {})
         if not username or not password or not comp_info.get('name'):
             continue
-        # Create User
         user = User(username=username, role='client')
         user.set_password(password)
         db.session.add(user)
-        db.session.flush()  # get user.id
-        # Create Company
+        db.session.flush()  # assign user.id
+
+        # Parse founded_date string into date object
+        founded_date = None
+        fd = comp_info.get('founded_date')
+        if fd:
+            try:
+                founded_date = date.fromisoformat(fd)
+            except ValueError:
+                founded_date = None
+
         company = Company(
             user_id=user.id,
             name=comp_info.get('name'),
@@ -64,7 +47,7 @@ def add_items():
             website=comp_info.get('website'),
             industry=comp_info.get('industry'),
             size=comp_info.get('size'),
-            founded_date=comp_info.get('founded_date'),
+            founded_date=founded_date,
             address=comp_info.get('address'),
             city=comp_info.get('city'),
             country=comp_info.get('country'),
@@ -83,12 +66,11 @@ def add_items():
         prof_info = c.get('profile', {})
         if not username or not password or not prof_info.get('full_name') or not prof_info.get('email'):
             continue
-        # Create User
         user = User(username=username, role='candidate')
         user.set_password(password)
         db.session.add(user)
-        db.session.flush()  # get user.id
-        # Create CandidateProfile
+        db.session.flush()
+
         profile = CandidateProfile(
             user_id=user.id,
             full_name=prof_info.get('full_name'),
@@ -102,16 +84,16 @@ def add_items():
         db.session.add(profile)
         created['candidates'].append({'user_id': user.id, 'profile_id': None})
 
-    # Commit all changes
+    # Commit transaction
     try:
         db.session.commit()
-        # Fill return IDs
-        for idx, c in enumerate(clients):
-            if idx < len(created['clients']):
-                created['clients'][idx]['company_id'] = Company.query.filter_by(user_id=created['clients'][idx]['user_id']).first().id
-        for idx, c in enumerate(candidates):
-            if idx < len(created['candidates']):
-                created['candidates'][idx]['profile_id'] = CandidateProfile.query.filter_by(user_id=created['candidates'][idx]['user_id']).first().id
+        # Populate returned IDs
+        for idx in range(len(created['clients'])):
+            uid = created['clients'][idx]['user_id']
+            created['clients'][idx]['company_id'] = Company.query.filter_by(user_id=uid).first().id
+        for idx in range(len(created['candidates'])):
+            uid = created['candidates'][idx]['user_id']
+            created['candidates'][idx]['profile_id'] = CandidateProfile.query.filter_by(user_id=uid).first().id
         return jsonify({'status': 'success', 'created': created}), 201
     except Exception as e:
         db.session.rollback()

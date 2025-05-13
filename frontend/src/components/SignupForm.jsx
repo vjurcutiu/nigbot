@@ -3,12 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { Link } from 'react-router-dom';
 
-
 export default function SignupForm() {
   const [form, setForm] = useState({
     username: '',
     password: '',
     role: 'candidate',
+
+    // Candidate fields
     full_name: '',
     email: '',
     phone: '',
@@ -16,6 +17,19 @@ export default function SignupForm() {
     country: '',
     profile_picture: '',
     summary: '',
+
+    // Company fields
+    name: '',
+    bio: '',
+    website: '',
+    industry: '',
+    size: '',
+    founded_date: '',
+    address: '',
+    latitude: '',
+    longitude: '',
+    contact_email: '',
+    contact_phone: '',
   });
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -29,8 +43,8 @@ export default function SignupForm() {
     e.preventDefault();
     setError('');
     try {
-      const res = await api.post('/auth/signup', form);
-      // on success, maybe auto-login? For now, redirect to login
+      // send entire form; backend can pick relevant fields based on role
+      await api.post('/auth/signup', form);
       navigate('/login', { state: { signedUp: true } });
     } catch (err) {
       setError(err.response?.data?.error || 'Signup failed');
@@ -40,6 +54,8 @@ export default function SignupForm() {
   return (
     <form onSubmit={handleSubmit} className="max-w-sm mx-auto p-4">
       <h2 className="text-xl mb-4">Sign Up</h2>
+
+      {/* Username & Password */}
       <label className="block mb-2">
         Username
         <input
@@ -50,7 +66,7 @@ export default function SignupForm() {
           className="block w-full border p-1"
         />
       </label>
-      <label className="block mb-2">
+      <label className="block mb-4">
         Password
         <input
           type="password"
@@ -61,6 +77,8 @@ export default function SignupForm() {
           className="block w-full border p-1"
         />
       </label>
+
+      {/* Role selector */}
       <label className="block mb-4">
         Role
         <select
@@ -74,77 +92,193 @@ export default function SignupForm() {
         </select>
       </label>
 
-      <label className="block mb-2">
-        Full Name
-        <input
-          name="full_name"
-          value={form.full_name}
-          onChange={handleChange}
-          className="block w-full border p-1"
-        />
-      </label>
-
-      <label className="block mb-2">
-        Email
-        <input
-          type="email"
-          name="email"
-          value={form.email}
-          onChange={handleChange}
-          className="block w-full border p-1"
-        />
-      </label>
-
-      <label className="block mb-2">
-        Phone
-        <input
-          name="phone"
-          value={form.phone}
-          onChange={handleChange}
-          className="block w-full border p-1"
-        />
-      </label>
-
-      <label className="block mb-2">
-        City
-        <input
-          name="city"
-          value={form.city}
-          onChange={handleChange}
-          className="block w-full border p-1"
-        />
-      </label>
-
-      <label className="block mb-2">
-        Country
-        <input
-          name="country"
-          value={form.country}
-          onChange={handleChange}
-          className="block w-full border p-1"
-        />
-      </label>
-
-      <label className="block mb-2">
-        Profile Picture URL
-        <input
-          name="profile_picture"
-          value={form.profile_picture}
-          onChange={handleChange}
-          className="block w-full border p-1"
-        />
-      </label>
-
-      <label className="block mb-4">
-        Summary
-        <textarea
-          name="summary"
-          value={form.summary}
-          onChange={handleChange}
-          className="block w-full border p-1"
-          rows={3}
-        />
-      </label>
+      {form.role === 'candidate' ? (
+        <> {/* Candidate-specific inputs */}
+          <label className="block mb-2">
+            Full Name
+            <input
+              name="full_name"
+              value={form.full_name}
+              onChange={handleChange}
+              required
+              className="block w-full border p-1"
+            />
+          </label>
+          <label className="block mb-2">
+            Email
+            <input
+              type="email"
+              name="email"
+              value={form.email}
+              onChange={handleChange}
+              required
+              className="block w-full border p-1"
+            />
+          </label>
+          <label className="block mb-2">
+            Phone
+            <input
+              name="phone"
+              value={form.phone}
+              onChange={handleChange}
+              className="block w-full border p-1"
+            />
+          </label>
+          <label className="block mb-2">
+            City
+            <input
+              name="city"
+              value={form.city}
+              onChange={handleChange}
+              className="block w-full border p-1"
+            />
+          </label>
+          <label className="block mb-2">
+            Country
+            <input
+              name="country"
+              value={form.country}
+              onChange={handleChange}
+              className="block w-full border p-1"
+            />
+          </label>
+          <label className="block mb-2">
+            Profile Picture URL
+            <input
+              name="profile_picture"
+              value={form.profile_picture}
+              onChange={handleChange}
+              className="block w-full border p-1"
+            />
+          </label>
+          <label className="block mb-4">
+            Summary
+            <textarea
+              name="summary"
+              value={form.summary}
+              onChange={handleChange}
+              className="block w-full border p-1"
+              rows={3}
+            />
+          </label>
+        </>
+      ) : (
+        <> {/* Client-specific inputs for Company model */}
+          <label className="block mb-2">
+            Company Name
+            <input
+              name="name"
+              value={form.name}
+              onChange={handleChange}
+              required
+              className="block w-full border p-1"
+            />
+          </label>
+          <label className="block mb-2">
+            Bio
+            <textarea
+              name="bio"
+              value={form.bio}
+              onChange={handleChange}
+              className="block w-full border p-1"
+              rows={3}
+            />
+          </label>
+          <label className="block mb-2">
+            Profile Picture URL
+            <input
+              name="profile_picture"
+              value={form.profile_picture}
+              onChange={handleChange}
+              className="block w-full border p-1"
+            />
+          </label>
+          <label className="block mb-2">
+            Website
+            <input
+              name="website"
+              value={form.website}
+              onChange={handleChange}
+              className="block w-full border p-1"
+            />
+          </label>
+          <label className="block mb-2">
+            Industry
+            <input
+              name="industry"
+              value={form.industry}
+              onChange={handleChange}
+              className="block w-full border p-1"
+            />
+          </label>
+          <label className="block mb-2">
+            Size
+            <input
+              name="size"
+              value={form.size}
+              onChange={handleChange}
+              placeholder="e.g., 1-10, 11-50"
+              className="block w-full border p-1"
+            />
+          </label>
+          <label className="block mb-2">
+            Founded Date
+            <input
+              type="date"
+              name="founded_date"
+              value={form.founded_date}
+              onChange={handleChange}
+              className="block w-full border p-1"
+            />
+          </label>
+          <label className="block mb-2">
+            Address
+            <input
+              name="address"
+              value={form.address}
+              onChange={handleChange}
+              className="block w-full border p-1"
+            />
+          </label>
+          <label className="block mb-2">
+            City
+            <input
+              name="city"
+              value={form.city}
+              onChange={handleChange}
+              className="block w-full border p-1"
+            />
+          </label>
+          <label className="block mb-2">
+            Country
+            <input
+              name="country"
+              value={form.country}
+              onChange={handleChange}
+              className="block w-full border p-1"
+            />
+          </label>
+          <label className="block mb-2">
+            Contact Email
+            <input
+              type="email"
+              name="contact_email"
+              value={form.contact_email}
+              onChange={handleChange}
+              className="block w-full border p-1"
+            />
+          </label>
+          <label className="block mb-4">
+            Contact Phone
+            <input
+              name="contact_phone"
+              value={form.contact_phone}
+              onChange={handleChange}
+              className="block w-full border p-1"
+            />
+          </label>
+        </>
+      )}
 
       <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded">
         Sign Up
@@ -157,6 +291,6 @@ export default function SignupForm() {
           Log in
         </Link>
       </p>
-          </form>
+    </form>
   );
 }

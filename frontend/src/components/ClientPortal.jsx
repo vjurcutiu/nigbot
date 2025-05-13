@@ -1,9 +1,7 @@
-// frontend/src/components/ClientPortal.jsx
 import { useState, useEffect } from 'react';
-import api from '../services/api';
+import clientService from '../services/clientService';
 import { Link, Routes, Route } from 'react-router-dom';
 import Marketplace from './marketplace/Marketplace';
-
 
 export default function ClientPortal() {
   const [overview, setOverview] = useState(null);
@@ -12,45 +10,54 @@ export default function ClientPortal() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    async function fetchClient() {
+    async function fetchClientData() {
       try {
-        const [ovRes, dataRes] = await Promise.all([
-          api.get('/client'),
-          api.get('/client/data'),
-        ]);
-        setOverview(ovRes.data);
-        setData(dataRes.data.data);
+        // Fetch dashboard overview
+        const overviewRes = await clientService.getDashboard();
+        // Fetch client-specific data list
+        const dataRes = await clientService.getData();
+
+        setOverview(overviewRes);
+        setData(dataRes);
       } catch (err) {
         setError(err.response?.data?.error || err.message);
       } finally {
         setLoading(false);
       }
     }
-    fetchClient();
+
+    fetchClientData();
   }, []);
 
   if (loading) return <div>Loading client portal...</div>;
-  if (error)   return <div>Error: {error}</div>;
+  if (error) return <div>Error: {error}</div>;
 
   return (
     <div className="p-4">
       <h1 className="text-xl font-semibold mb-4">Client Dashboard</h1>
-      <pre className="mb-6">{JSON.stringify(overview, null, 2)}</pre>
-      <h2 className="text-lg font-medium mb-2">Your Data</h2>
-      {data.length ? (
-        <ul className="list-disc pl-5">
-          {data.map((item, idx) => <li key={idx}>{JSON.stringify(item)}</li>)}
-        </ul>
-      ) : (
-        <div>No data available</div>
-      )}
+
+      <section className="mb-6">
+        <h2 className="text-lg font-medium">Overview</h2>
+        <pre className="bg-gray-100 p-2 rounded">{JSON.stringify(overview, null, 2)}</pre>
+      </section>
+
+      <section className="mb-6">
+        <h2 className="text-lg font-medium">Your Data</h2>
+        {data.length ? (
+          <ul className="list-disc pl-5">
+            {data.map((item, idx) => (
+              <li key={idx}>{JSON.stringify(item)}</li>
+            ))}
+          </ul>
+        ) : (
+          <div>No data available</div>
+        )}
+      </section>
 
       <nav className="mt-6">
         <Link to="/client/settings" className="mr-4 underline">Settings</Link>
-        <Link to="/client/reports" className="underline">Reports</Link>
-        <Link to="/client/marketplace" className="underline">
-          Marketplace
-        </Link>
+        <Link to="/client/reports" className="mr-4 underline">Reports</Link>
+        <Link to="/client/marketplace" className="underline">Marketplace</Link>
       </nav>
 
       <Routes>

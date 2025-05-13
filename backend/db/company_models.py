@@ -1,6 +1,6 @@
  # backend/db/company_models.py
 
-from backend.db.models import db
+from db.models import db
 from datetime import date
 
 class Company(db.Model):

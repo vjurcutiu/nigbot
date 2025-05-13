@@ -5,6 +5,7 @@ import LoginForm from './components/LoginForm';
 import SignupForm from './components/SignupForm';
 import ClientPortal from './components/ClientPortal';
 import CandidatePortal from './components/CandidatePortal';
+import Marketplace from './components/marketplace/Marketplace';
 
 function App() {
   const [role, setRole] = useState(null);
@@ -31,6 +32,8 @@ function App() {
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" />} />
+
+        <Route path="/marketplace" element={<Marketplace />} />
       </Routes>
     </BrowserRouter>
   );

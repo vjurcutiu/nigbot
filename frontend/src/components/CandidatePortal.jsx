@@ -108,13 +108,14 @@ export default function CandidatePortal() {
       <nav className="mt-4">
         <Link to="/candidate/apply" className="mr-4 underline">Apply</Link>
         <Link to="/candidate/settings" className="mr-4 underline">Settings</Link>
-        <Link to="/candidate/marketplace" className="underline">Marketplace</Link>
+        <Link to="/marketplace" className="underline">
+          Marketplace
+        </Link>
       </nav>
 
       <Routes>
         <Route path="apply" element={<div>Job application form (TODO)</div>} />
         <Route path="settings" element={<div>Settings page (TODO)</div>} />
-        <Route path="marketplace" element={<Marketplace />} />
       </Routes>
     </div>
   );

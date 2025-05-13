@@ -88,13 +88,14 @@ export default function ClientPortal() {
       <nav className="mt-6">
         <Link to="settings" className="mr-4 underline">Settings</Link>
         <Link to="reports"  className="mr-4 underline">Reports</Link>
-        <Link to="marketplace" className="underline">Marketplace</Link>
+        <Link to="/marketplace" className="underline">
+          Marketplace
+        </Link>
       </nav>
 
       <Routes>
         <Route path="settings" element={<div>Settings page (TODO)</div>} />
         <Route path="reports"  element={<div>Reports page (TODO)</div>} />
-        <Route path="marketplace" element={<Marketplace />} />
       </Routes>
     </div>
   );

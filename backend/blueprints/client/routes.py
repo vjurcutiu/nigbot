@@ -14,12 +14,55 @@ def client_required(func):
     wrapper.__name__ = func.__name__
     return wrapper
 
+@client_bp.route('', methods=['GET'])
 @client_bp.route('/', methods=['GET'])
-@client_required
+@client_required  # ensure user is authenticated as client
 def client_dashboard():
-    """Client dashboard endpoint."""
-    # TODO: Fetch and return client-specific overview data
-    return jsonify({"message": "Welcome to the client dashboard"})
+    """Client dashboard endpoint returning overview + full company data."""
+    print(f"Request to client_dashboard from user_id: {session.get('user_id')}, role: {session.get('role')}")
+    # Debug: print all company user_ids in the database
+    all_companies = Company.query.all()
+    print("All companies user_ids in DB:", [c.user_id for c in all_companies])
+    # Lookup the company for the logged-in user
+    company = Company.query.filter_by(user_id=session['user_id']).first()
+    print(f"Queried company: {company}")
+    if not company:
+        print("No company found for user_id:", session.get('user_id'))
+        return jsonify({
+            "message": "No company found",
+            "company": None
+        }), 404
+
+    # Serialize company and related job positions
+    company_data = {
+        "id": company.id,
+        "name": company.name,
+        "address": company.address,
+        "contact_email": company.contact_email,
+        "contact_phone": company.contact_phone,
+        "created_at": company.created_at.isoformat(),
+        "updated_at": company.updated_at.isoformat(),
+        "job_positions": [
+            {
+                "id": job.id,
+                "title": job.title,
+                "description": job.description,
+                "department": job.department,
+                "location": job.location,
+                "posted_at": job.posted_at.isoformat(),
+                "status": job.status
+            }
+            for job in company.job_positions
+        ]
+    }
+
+    overview = {
+        "message": "Welcome to the client dashboard",
+        "companyId": company.id,
+        "company": company_data
+    }
+    return jsonify(overview)
+
 
 @client_bp.route('/data', methods=['GET'])
 @client_required
@@ -37,12 +80,52 @@ def client_action():
     # TODO: Handle client action based on payload
     return jsonify({"status": "Action received", "payload": payload})
 
+@client_bp.route('/debug/companies', methods=['GET'])
+def debug_companies():
+    """Debug endpoint to list all companies and their user_ids."""
+    companies = Company.query.all()
+    companies_data = [{"id": c.id, "user_id": c.user_id, "name": c.name} for c in companies]
+    return jsonify({"companies": companies_data})
+
+@client_bp.route('/debug/add_test_company', methods=['POST'])
+def debug_add_test_company():
+    """Debug endpoint to add a test company for the current user in session."""
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({"error": "No user_id in session"}), 400
+
+    # Check if company already exists for this user
+    existing = Company.query.filter_by(user_id=user_id).first()
+    if existing:
+        return jsonify({"message": "Company already exists for this user", "company_id": existing.id})
+
+    # Create a test company
+    test_company = Company(
+        user_id=user_id,
+        name=f"Test Company for user {user_id}",
+        bio="This is a test company created for debugging.",
+        website="https://example.com",
+        industry="Technology",
+        size="1-10",
+        address="123 Test St",
+        city="Testville",
+        country="Testland",
+        contact_email="test@example.com",
+        contact_phone="123-456-7890"
+    )
+    db.session.add(test_company)
+    db.session.commit()
+
+    return jsonify({"message": "Test company created", "company_id": test_company.id})
+
 @client_bp.route('/<int:company_id>', methods=['GET'])
 @client_required
 def get_company(company_id):
+    print(f"Request to get_company with company_id: {company_id} from user_id: {session.get('user_id')}")
     """Retrieve full company info (including job positions) by ID."""
     company = Company.query.get(company_id)
     if not company:
+        print(f"Company with id {company_id} not found")
         return jsonify({"error": "Company not found"}), 404
 
     # Serialize the company
@@ -96,16 +179,20 @@ from datetime import datetime
 @client_bp.route('/<int:company_id>', methods=['PATCH'])
 @client_required
 def update_company(company_id):
+    print(f"Request to update_company with company_id: {company_id} from user_id: {session.get('user_id')}")
     """Update allowed fields on a Company record."""
     company = Company.query.get(company_id)
     if not company:
+        print(f"Company with id {company_id} not found")
         return jsonify({"error": "Company not found"}), 404
 
     # Ensure the current client owns this company
     if company.user_id != session.get('user_id'):
+        print(f"User {session.get('user_id')} forbidden to update company {company_id}")
         return jsonify({"error": "Forbidden"}), 403
 
     data = request.get_json() or {}
+    print(f"Update data received: {data}")
 
     # Define which fields may be updated
     updatable_fields = {
@@ -140,10 +227,12 @@ def update_company(company_id):
                 errors[field] = f"Invalid value: {e}"
 
     if errors:
+        print(f"Validation errors: {errors}")
         return jsonify({"error": "Validation failed", "details": errors}), 400
 
     company.updated_at = datetime.utcnow()
     db.session.commit()
+    print(f"Company {company_id} updated successfully")
 
     # Return the updated record
     return jsonify({

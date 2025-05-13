@@ -53,6 +53,23 @@ def signup():
             )
             db.session.add(candidate_profile)
             db.session.commit()
+        elif user.role == 'client':
+            from db.company_models import Company
+            company = Company(
+                user_id=user.id,
+                name=data.get('company_name', f"Company of {user.username}"),
+                bio=data.get('company_bio', ''),
+                website=data.get('company_website', ''),
+                industry=data.get('company_industry', ''),
+                size=data.get('company_size', ''),
+                address=data.get('company_address', ''),
+                city=data.get('company_city', ''),
+                country=data.get('company_country', ''),
+                contact_email=data.get('company_contact_email', ''),
+                contact_phone=data.get('company_contact_phone', ''),
+            )
+            db.session.add(company)
+            db.session.commit()
 
         return jsonify({"message": "Signup successful", "role": user.role}), 201
     except Exception as e:

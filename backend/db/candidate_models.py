@@ -16,6 +16,8 @@ class CandidateProfile(db.Model):
     employments = db.relationship('EmploymentHistory', backref='candidate', cascade='all, delete-orphan')
     documents = db.relationship('LegalDocument', backref='candidate', cascade='all, delete-orphan')
     applications = db.relationship('JobApplication', backref='candidate', cascade='all, delete-orphan')
+    candidate_skills = db.relationship('CandidateSkill', backref='candidate_profile', cascade='all, delete-orphan')
+    educations = db.relationship('Education', backref='candidate_profile', cascade='all, delete-orphan')
 
 
 class EmploymentHistory(db.Model):
@@ -62,6 +64,8 @@ class CandidateSkill(db.Model):
     candidate_id = db.Column(db.Integer, db.ForeignKey('candidate_profiles.id'), primary_key=True)
     skill_id = db.Column(db.Integer, db.ForeignKey('skills.id'), primary_key=True)
     proficiency = db.Column(db.String(50), nullable=True)  # e.g., Beginner, Intermediate, Expert
+
+    skill = db.relationship('Skill')
 
 
 

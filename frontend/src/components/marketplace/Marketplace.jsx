@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { fetchCompanies, fetchCandidates } from '../../services/marketplaceService';
+import { Link } from 'react-router-dom';   // ← add this
 
 const ITEMS_PER_PAGE = 12;
 
@@ -120,9 +121,9 @@ export default function Marketplace() {
         {/* Grid of Items */}
         <div className="grid grid-cols-3 gap-4">
           {pageItems.map(item => (
-            <div
+            <Link
               key={item.id}
-              onClick={() => handleSelect(item)}
+              to={`/${view}/${item.id}`}             // ← dynamic route: "/companies/123" or "/candidates/456"
               className="border rounded-lg shadow-sm p-4 flex flex-col justify-between cursor-pointer hover:shadow-md transition"
             >
               <h3 className="font-semibold text-lg mb-2">
@@ -131,7 +132,7 @@ export default function Marketplace() {
               <p className="text-sm flex-1 overflow-hidden">
                 {item.bio}
               </p>
-            </div>
+            </Link>
           ))}
         </div>
 

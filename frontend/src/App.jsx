@@ -3,8 +3,8 @@ import { useState } from 'react';
 import AuthEntry from './components/AuthEntry';
 import LoginForm from './components/LoginForm';
 import SignupForm from './components/SignupForm';
-import ClientPortal from './components/ClientPortal';
-import CandidatePortal from './components/CandidatePortal';
+import ClientPortal from './components/profiles/ClientPortal';
+import CandidatePortal from './components/profiles/CandidatePortal';
 import Marketplace from './components/marketplace/Marketplace';
 
 function App() {
@@ -33,7 +33,11 @@ function App() {
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" />} />
 
+        {/* Marketplace */}
         <Route path="/marketplace" element={<Marketplace />} />
+        <Route path="/companies/:companyId"  />
+        <Route path="/candidates/:candidateId" />
+
       </Routes>
     </BrowserRouter>
   );

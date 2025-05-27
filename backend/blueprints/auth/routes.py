@@ -1,13 +1,20 @@
 from flask import Blueprint, request, jsonify, session
 from db.models import db, User
+from extensions import login_manager
+from flask_login import login_user, logout_user
 
 auth_bp = Blueprint('auth', __name__)
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
 @auth_bp.route('/login', methods=['POST'])
 def login():
     data = request.json
     user = User.query.filter_by(username=data['username']).first()
     if user and user.check_password(data['password']):
+        login_user(user)
         session.permanent = True
         session['user_id'] = user.id
         session['role'] = user.role
@@ -16,6 +23,7 @@ def login():
 
 @auth_bp.route('/logout', methods=['POST'])
 def logout():
+    logout_user()
     session.clear()
     return jsonify({"message": "Logged out"}), 200
 

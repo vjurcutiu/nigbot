@@ -4,7 +4,20 @@ import useSWRInfinite from 'swr/infinite';
 import io from 'socket.io-client';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
-const fetcher = url => fetch(url, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }).then(res => res.json());
+const fetcher = async url => {
+  const fullUrl = url.startsWith('http') ? url : `${API_URL}${url}`;
+  const res = await fetch(fullUrl, { 
+    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+    credentials: 'include'
+  });
+  const text = await res.text();
+  try {
+    return JSON.parse(text);
+  } catch (err) {
+    console.error('Failed to parse JSON response:', text);
+    throw new Error(`Failed to parse JSON response from ${fullUrl}: ${text}`);
+  }
+};
 
 // Initialize socket outside component to avoid reconnects
 const socket = io(`${API_URL}/inbox`, {
@@ -74,7 +87,7 @@ export default function Inbox() {
 
   // 5. Send message
   const sendMessage = () => {
-    if (!inputText.trim()) return;
+    if (!inputText.trim() || !activeConv) return;
     const body = inputText.trim();
     setInputText('');
     const url = `/api/conversations/${activeConv}/messages`;
@@ -83,7 +96,10 @@ export default function Inbox() {
     const optimisticMsg = { id: tempId, sender_id: 'me', body, created_at: new Date().toISOString() };
     mutate(
       `/api/conversations/${activeConv}/messages?limit=50`,
-      old => ({ messages: [...old.messages, optimisticMsg], nextCursor: old.nextCursor }),
+      old => ({
+        messages: [...(old?.messages || []), optimisticMsg],
+        nextCursor: old?.nextCursor
+      }),
       false
     );
     // POST
@@ -95,17 +111,23 @@ export default function Inbox() {
       },
       body: JSON.stringify({ body }),
     })
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error('Network response was not ok');
+        return res.json();
+      })
       .then(serverMsg => {
         // replace temp message
         mutate(
           `/api/conversations/${activeConv}/messages?limit=50`,
           old => ({
-            messages: old.messages.map(m => m.id === tempId ? serverMsg : m),
-            nextCursor: old.nextCursor
+            messages: old?.messages.map(m => m.id === tempId ? serverMsg : m) || [],
+            nextCursor: old?.nextCursor
           })
         );
         mutate('/api/conversations');
+      })
+      .catch(err => {
+        console.error('Failed to send message:', err);
       });
   };
 
@@ -113,7 +135,10 @@ export default function Inbox() {
   const endRef = useRef();
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
-  if (convError) return <div>Error loading conversations</div>;
+  if (convError) {
+    console.error('Error loading conversations:', convError);
+    return <div>Error loading conversations: {convError.message || JSON.stringify(convError)}</div>;
+  }
 
   return (
     <div className="flex h-full">

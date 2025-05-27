@@ -7,7 +7,7 @@ from blueprints.client.routes import client_bp
 from blueprints.candidate.routes import candidate_bp
 from blueprints.marketplace.routes import marketplace_bp
 from blueprints.chat.routes import init_app as chat_init_app
-from extensions import socketio
+from extensions import socketio, login_manager
 
 
 from db.models import db
@@ -44,6 +44,7 @@ CORS(
 db.init_app(app)
 migrate = Migrate(app, db)
 socketio.init_app(app, cors_allowed_origins="*")
+login_manager.init_app(app)
 
 # register blueprints
 app.register_blueprint(auth_bp,      url_prefix='/api/auth')

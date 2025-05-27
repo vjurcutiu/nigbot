@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { fetchCompanies, fetchCandidates } from '../../services/marketplaceService';
+import { fetchCompanies, fetchCandidates, fetchJobs } from '../../services/marketplaceService';
 import { Link } from 'react-router-dom';   // ← add this
 
 const ITEMS_PER_PAGE = 12;
@@ -7,6 +7,7 @@ const ITEMS_PER_PAGE = 12;
 export default function Marketplace() {
   const [companies, setCompanies] = useState([]);
   const [candidates, setCandidates] = useState([]);
+  const [jobs, setJobs] = useState([]);
   const [error, setError] = useState(null);
   const [view, setView] = useState('companies');
   const [currentPage, setCurrentPage] = useState(1);
@@ -16,12 +17,14 @@ export default function Marketplace() {
   useEffect(() => {
     async function load() {
       try {
-        const [cs, cds] = await Promise.all([
+        const [cs, cds, js] = await Promise.all([
           fetchCompanies(),
           fetchCandidates(),
+          fetchJobs(),
         ]);
         setCompanies(cs);
         setCandidates(cds);
+        setJobs(js);
       } catch (err) {
         setError('Unable to load marketplace data.');
       }
@@ -32,10 +35,25 @@ export default function Marketplace() {
   if (error) return <div className="text-red-600">{error}</div>;
 
   // Determine and filter items
-  const allItems = view === 'companies' ? companies : candidates;
+  let allItems;
+  if (view === 'companies') {
+    allItems = companies;
+  } else if (view === 'candidates') {
+    allItems = candidates;
+  } else {
+    allItems = jobs;
+  }
+
   const filteredItems = allItems
     .filter(item => {
-      const name = view === 'companies' ? item.name : item.full_name;
+      let name;
+      if (view === 'companies') {
+        name = item.name;
+      } else if (view === 'candidates') {
+        name = item.full_name;
+      } else {
+        name = item.title;
+      }
       return name.toLowerCase().includes(searchTerm.toLowerCase());
     })
     // TODO: apply additional filters here
@@ -95,7 +113,7 @@ export default function Marketplace() {
         {/* Header & Controls */}
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold">
-            {view === 'companies' ? 'Companies' : 'Candidates'}
+            {view === 'companies' ? 'Companies' : view === 'candidates' ? 'Candidates' : 'Jobs'}
           </h2>
           <select
             value={view}
@@ -104,6 +122,7 @@ export default function Marketplace() {
           >
             <option value="companies">Companies</option>
             <option value="candidates">Candidates</option>
+            <option value="jobs">Jobs</option>
           </select>
         </div>
 
@@ -123,14 +142,14 @@ export default function Marketplace() {
           {pageItems.map(item => (
             <Link
               key={item.id}
-              to={`/${view}/${item.id}`}             // ← dynamic route: "/companies/123" or "/candidates/456"
+              to={`/${view}/${item.id}`}             // ← dynamic route: "/companies/123" or "/candidates/456" or "/jobs/789"
               className="border rounded-lg shadow-sm p-4 flex flex-col justify-between cursor-pointer hover:shadow-md transition"
             >
               <h3 className="font-semibold text-lg mb-2">
-                {view === 'companies' ? item.name : item.full_name}
+                {view === 'companies' ? item.name : view === 'candidates' ? item.full_name : item.title}
               </h3>
               <p className="text-sm flex-1 overflow-hidden">
-                {item.bio}
+                {view === 'companies' ? item.bio : view === 'candidates' ? item.bio : `${item.location || 'Unknown location'} - ${item.employment_type || 'N/A'} - ${item.company_name || ''}`}
               </p>
             </Link>
           ))}

@@ -2,6 +2,7 @@ import logging
 from flask import Blueprint, jsonify
 from db.company_models import Company
 from db.models import CandidateProfile, db
+from db.job_models import JobPosition
 
 logger = logging.getLogger(__name__)
 
@@ -38,4 +39,35 @@ def list_candidates():
         return jsonify({"candidates": data}), 200
     except Exception as e:
         logger.exception("Failed to load candidates for marketplace")
+        return jsonify({"error": "Internal server error"}), 500
+
+@marketplace_bp.route('/jobs', methods=['GET'])
+def list_jobs():
+    """Return list of all jobs with selected fields."""
+    try:
+        jobs = JobPosition.query.join(JobPosition.company).with_entities(
+            JobPosition.id,
+            JobPosition.title,
+            JobPosition.location,
+            JobPosition.employment_type,
+            JobPosition.remote,
+            JobPosition.posted_at,
+            Company.name.label('company_name')
+        ).all()
+        data = [
+            {
+                "id": j.id,
+                "title": j.title,
+                "location": j.location,
+                "employment_type": j.employment_type,
+                "remote": j.remote,
+                "posted_at": j.posted_at.isoformat() if j.posted_at else None,
+                "company_name": j.company_name
+            }
+            for j in jobs
+        ]
+        logger.info(f"Retrieved {len(data)} jobs for marketplace")
+        return jsonify({"jobs": data}), 200
+    except Exception as e:
+        logger.exception("Failed to load jobs for marketplace")
         return jsonify({"error": "Internal server error"}), 500

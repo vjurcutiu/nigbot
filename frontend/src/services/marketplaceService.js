@@ -29,3 +29,17 @@ export async function fetchCandidates() {
     throw err;
   }
 }
+
+/**
+ * Fetch all jobs for marketplace listing.
+ * @returns {Promise<{id: number, title: string, location: string, employment_type: string, remote: boolean, posted_at: string, company_name: string}[]>}
+ */
+export async function fetchJobs() {
+  try {
+    const resp = await api.get('/marketplace/jobs');
+    return resp.data.jobs;
+  } catch (err) {
+    logger.error('marketplaceService › fetchJobs failed:', err);
+    throw err;
+  }
+}

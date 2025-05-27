@@ -3,7 +3,7 @@ import { Link, Routes, Route } from 'react-router-dom';
 import clientService from '../../services/clientService';
 import jobService from '../../services/jobService';
 import useFullProfile from '../../hooks/useFullProfile';
-import ProfileCard from './ProfileCard';
+import EditableProfileCard from './EditableProfileCard';
 import { EntityList } from './EntityList';
 import { Button } from '../ui/Button';
 
@@ -38,15 +38,18 @@ export default function ClientPortal() {
   } = fullCompany || {};
 
   const profileFields = [
-    { label: 'ID', value: id },
-    { label: 'Name', value: name },
-    { label: 'Industry', value: industry },
-    { label: 'Size', value: size },
-    { label: 'Founded', value: founded_date },
-    { label: 'Website', value: <a href={website} target="_blank" rel="noopener noreferrer">{website}</a> },
-    { label: 'Contact', value: `${contact_email} | ${contact_phone}` },
-    { label: 'Location', value: `${address}, ${city}, ${country}` },
-    { label: 'Bio', value: bio }
+    { name: 'id', label: 'ID' },
+    { name: 'name', label: 'Name' },
+    { name: 'industry', label: 'Industry' },
+    { name: 'size', label: 'Size' },
+    { name: 'founded_date', label: 'Founded', type: 'date' },
+    { name: 'website', label: 'Website' },
+    { name: 'contact_email', label: 'Contact Email' },
+    { name: 'contact_phone', label: 'Contact Phone' },
+    { name: 'address', label: 'Address' },
+    { name: 'city', label: 'City' },
+    { name: 'country', label: 'Country' },
+    { name: 'bio', label: 'Bio' }
   ];
 
   const handlePostJob = async () => {
@@ -118,7 +121,8 @@ export default function ClientPortal() {
         </div>
       )}
 
-      <ProfileCard title="Company Profile" fields={profileFields} />
+      <EditableProfileCard title="Company Profile" fields={profileFields} initialData={fullCompany}
+        onSave={(diff) => clientService.updateCompany(fullCompany.id, diff)}/>
 
       <EntityList
         title="Job Positions"

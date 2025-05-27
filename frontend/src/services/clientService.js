@@ -37,10 +37,24 @@ const clientService = {
   //    founded_date (YYYY-MM-DD), address, city, country,
   //    latitude, longitude, contact_email, contact_phone
   async updateCompany(companyId, data) {
-    const res = await api.patch(`/client/${companyId}`, data);
-    return res.data; /* {
-       id, name, bio, …, contact_phone, created_at, updated_at
-    } */
+    try {
+      const res = await api.patch(`/client/${companyId}`, data);
+      return res.data; /* {
+         id, name, bio, …, contact_phone, created_at, updated_at
+      } */
+    } catch (error) {
+      console.error('Error in updateCompany:', error);
+      if (error.response) {
+        console.error('Response data:', error.response.data);
+        console.error('Response status:', error.response.status);
+        console.error('Response headers:', error.response.headers);
+      } else if (error.request) {
+        console.error('No response received:', error.request);
+      } else {
+        console.error('Error setting up request:', error.message);
+      }
+      throw error;
+    }
   },
 };
 

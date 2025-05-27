@@ -46,10 +46,8 @@ def client_dashboard():
                 "id": job.id,
                 "title": job.title,
                 "description": job.description,
-                "department": job.department,
                 "location": job.location,
-                "posted_at": job.posted_at.isoformat(),
-                "status": job.status
+                "posted_at": job.posted_at.isoformat()
             }
             for job in company.job_positions
         ]
@@ -175,81 +173,82 @@ from datetime import datetime
 
 # … assume company_bp and client_required are already defined above …
 
+import traceback
+import logging
+
 @client_bp.route('/<int:company_id>', methods=['PATCH'])
 @client_required
 def update_company(company_id):
-    print(f"Request to update_company with company_id: {company_id} from user_id: {session.get('user_id')}")
-    """Update allowed fields on a Company record."""
-    company = Company.query.get(company_id)
-    if not company:
-        print(f"Company with id {company_id} not found")
-        return jsonify({"error": "Company not found"}), 404
+    try:
+        logging.info(f"Request to update_company with company_id: {company_id} from user_id: {session.get('user_id')}")
+        company = Company.query.get(company_id)
+        if not company:
+            logging.warning(f"Company with id {company_id} not found")
+            return jsonify({"error": "Company not found"}), 404
 
-    # Ensure the current client owns this company
-    if company.user_id != session.get('user_id'):
-        print(f"User {session.get('user_id')} forbidden to update company {company_id}")
-        return jsonify({"error": "Forbidden"}), 403
+        if company.user_id != session.get('user_id'):
+            logging.warning(f"User {session.get('user_id')} forbidden to update company {company_id}")
+            return jsonify({"error": "Forbidden"}), 403
 
-    data = request.get_json() or {}
-    print(f"Update data received: {data}")
+        data = request.get_json() or {}
+        logging.info(f"Update data received: {data}")
 
-    # Define which fields may be updated
-    updatable_fields = {
-        "name": str,
-        "bio": str,
-        "profile_picture": str,
-        "website": str,
-        "industry": str,
-        "size": str,
-        "founded_date": "date",      # expects YYYY-MM-DD
-        "address": str,
-        "city": str,
-        "country": str,
-        "latitude": float,
-        "longitude": float,
-        "contact_email": str,
-        "contact_phone": str,
-    }
+        updatable_fields = {
+            "name": str,
+            "bio": str,
+            "profile_picture": str,
+            "website": str,
+            "industry": str,
+            "size": str,
+            "founded_date": "date",
+            "address": str,
+            "city": str,
+            "country": str,
+            "latitude": float,
+            "longitude": float,
+            "contact_email": str,
+            "contact_phone": str,
+        }
 
-    errors = {}
-    for field, expected in updatable_fields.items():
-        if field in data:
-            val = data[field]
-            # simple type/check guard
-            try:
-                if expected == "date":
-                    # parse date strings
-                    setattr(company, field, datetime.fromisoformat(val).date())
-                else:
-                    setattr(company, field, expected(val))
-            except Exception as e:
-                errors[field] = f"Invalid value: {e}"
+        errors = {}
+        for field, expected in updatable_fields.items():
+            if field in data:
+                val = data[field]
+                try:
+                    if expected == "date":
+                        setattr(company, field, datetime.fromisoformat(val).date())
+                    else:
+                        setattr(company, field, expected(val))
+                except Exception as e:
+                    errors[field] = f"Invalid value: {e}"
 
-    if errors:
-        print(f"Validation errors: {errors}")
-        return jsonify({"error": "Validation failed", "details": errors}), 400
+        if errors:
+            logging.error(f"Validation errors: {errors}")
+            return jsonify({"error": "Validation failed", "details": errors}), 400
 
-    company.updated_at = datetime.utcnow()
-    db.session.commit()
-    print(f"Company {company_id} updated successfully")
+        company.updated_at = datetime.utcnow()
+        db.session.commit()
+        logging.info(f"Company {company_id} updated successfully")
 
-    # Return the updated record
-    return jsonify({
-        "id": company.id,
-        "name": company.name,
-        "bio": company.bio,
-        "profile_picture": company.profile_picture,
-        "website": company.website,
-        "industry": company.industry,
-        "size": company.size,
-        "founded_date": company.founded_date.isoformat() if company.founded_date else None,
-        "address": company.address,
-        "city": company.city,
-        "country": company.country,
-        "latitude": company.latitude,
-        "longitude": company.longitude,
-        "contact_email": company.contact_email,
-        "contact_phone": company.contact_phone,
-        "created_at": company.created_at.isoformat(),
-        "updated_at": company.updated_at.isoformat(),
-    }), 200
+        return jsonify({
+            "id": company.id,
+            "name": company.name,
+            "bio": company.bio,
+            "profile_picture": company.profile_picture,
+            "website": company.website,
+            "industry": company.industry,
+            "size": company.size,
+            "founded_date": company.founded_date.isoformat() if company.founded_date else None,
+            "address": company.address,
+            "city": company.city,
+            "country": company.country,
+            "latitude": company.latitude,
+            "longitude": company.longitude,
+            "contact_email": company.contact_email,
+            "contact_phone": company.contact_phone,
+            "created_at": company.created_at.isoformat(),
+            "updated_at": company.updated_at.isoformat(),
+        }), 200
+    except Exception as e:
+        logging.error(f"Exception in update_company: {e}\n{traceback.format_exc()}")
+        return jsonify({"error": "Internal server error"}), 500

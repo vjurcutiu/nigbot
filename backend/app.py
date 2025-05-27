@@ -34,7 +34,7 @@ CORS(
         r"/api/*": {
             "origins": ["http://localhost:5173", "http://localhost:5174"],
             "allow_headers": ["Content-Type", "Authorization"],
-            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+            "methods": ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]
         }
     }
 )

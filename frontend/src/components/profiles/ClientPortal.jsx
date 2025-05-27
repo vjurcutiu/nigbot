@@ -61,7 +61,8 @@ export default function ClientPortal() {
       <nav className="mt-6">
         <Link to="settings" className="mr-4 underline">Settings</Link>
         <Link to="reports" className="mr-4 underline">Reports</Link>
-        <Link to="/marketplace" className="underline">Marketplace</Link>
+        <Link to="/marketplace" className="mr-4 underline">Marketplace</Link>
+        <Link to="/chat" className="underline">Chat</Link>
       </nav>
 
       <Routes>

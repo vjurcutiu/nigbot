@@ -6,6 +6,7 @@ import SignupForm from './components/SignupForm';
 import ClientPortal from './components/profiles/ClientPortal';
 import CandidatePortal from './components/profiles/CandidatePortal';
 import Marketplace from './components/marketplace/Marketplace';
+import Inbox from './components/chat/Inbox';
 
 function App() {
   const [role, setRole] = useState(null);
@@ -29,6 +30,9 @@ function App() {
           path="/candidate/*"
           element={role === 'candidate' ? <CandidatePortal /> : <Navigate to="/" />}
         />
+
+        {/* Chat */}
+        <Route path="/chat" element={<Inbox />} />
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" />} />

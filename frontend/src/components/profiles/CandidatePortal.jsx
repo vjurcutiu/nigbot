@@ -82,7 +82,8 @@ export default function CandidatePortal() {
       <nav className="mt-4">
         <Link to="apply" className="mr-4 underline">Apply</Link>
         <Link to="settings" className="mr-4 underline">Settings</Link>
-        <Link to="/marketplace" className="underline">Marketplace</Link>
+        <Link to="/marketplace" className="mr-4 underline">Marketplace</Link>
+        <Link to="/chat" className="underline">Chat</Link>
       </nav>
 
       <Routes>

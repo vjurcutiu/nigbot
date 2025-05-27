@@ -5,8 +5,9 @@ from flask_migrate import Migrate
 from blueprints.auth.routes import auth_bp
 from blueprints.client.routes import client_bp
 from blueprints.candidate.routes import candidate_bp
-from blueprints.extra.addon import addon_bp
 from blueprints.marketplace.routes import marketplace_bp
+from blueprints.chat.routes import init_app as chat_init_app
+from extensions import socketio
 
 
 from db.models import db
@@ -39,15 +40,16 @@ CORS(
 # initialize extensions
 db.init_app(app)
 migrate = Migrate(app, db)
+socketio.init_app(app, cors_allowed_origins="*")
 
 # register blueprints
 app.register_blueprint(auth_bp,      url_prefix='/api/auth')
 app.register_blueprint(client_bp,    url_prefix='/api/client')
 app.register_blueprint(candidate_bp, url_prefix='/api/candidate')
-app.register_blueprint(addon_bp )
 app.register_blueprint(marketplace_bp)
 
+chat_init_app(app)
 
 if __name__ == '__main__':
     # no more db.create_all()
-    app.run(debug=True)
+    socketio.run(app, debug=True)

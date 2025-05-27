@@ -8,6 +8,7 @@ import CandidatePortal from './components/profiles/CandidatePortal';
 import Marketplace from './components/marketplace/Marketplace';
 import Inbox from './components/chat/Inbox';
 import api from './services/api';
+import { Layout } from './components/ui/Layout';
 
 function App() {
   const [role, setRole] = useState(null);
@@ -32,27 +33,24 @@ function App() {
         <Route path="/login" element={<LoginForm onLogin={setRole} />} />
         <Route path="/signup" element={<SignupForm />} />
 
-        {/* Protected */}
-        <Route
-          path="/client/*"
-          element={role === 'client' ? <ClientPortal /> : <Navigate to="/" />}
-        />
-        <Route
-          path="/candidate/*"
-          element={role === 'candidate' ? <CandidatePortal /> : <Navigate to="/" />}
-        />
-
-        {/* Chat */}
-        <Route path="/chat" element={<Inbox />} />
+        {/* Protected with Layout */}
+        <Route element={<Layout allowedRoles={['client']} />}>
+          <Route path="/client/*" element={<ClientPortal />} />
+        </Route>
+        <Route element={<Layout allowedRoles={['candidate']} />}>
+          <Route path="/candidate/*" element={<CandidatePortal />} />
+        </Route>
+        <Route element={<Layout allowedRoles={['client', 'candidate']} />}>
+          <Route path="/chat" element={<Inbox />} />
+          <Route path="/marketplace" element={<Marketplace />} />
+        </Route>
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" />} />
 
-        {/* Marketplace */}
-        <Route path="/marketplace" element={<Marketplace />} />
-        <Route path="/companies/:companyId"  />
+        {/* Other routes without layout */}
+        <Route path="/companies/:companyId" />
         <Route path="/candidates/:candidateId" />
-
       </Routes>
     </BrowserRouter>
   );

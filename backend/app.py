@@ -18,11 +18,14 @@ from db.candidate_models import (
     Skill, CandidateSkill, Education
 )
 
+from datetime import timedelta
+
 app = Flask(__name__)
 app.config.update({
     'SECRET_KEY': 'your-secret-key',
     'SQLALCHEMY_DATABASE_URI': 'sqlite:///myapp.db',
     'SQLALCHEMY_TRACK_MODIFICATIONS': False,
+    'PERMANENT_SESSION_LIFETIME': timedelta(days=7),
 })
 
 CORS(

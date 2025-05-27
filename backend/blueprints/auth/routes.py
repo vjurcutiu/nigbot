@@ -8,6 +8,7 @@ def login():
     data = request.json
     user = User.query.filter_by(username=data['username']).first()
     if user and user.check_password(data['password']):
+        session.permanent = True
         session['user_id'] = user.id
         session['role'] = user.role
         return jsonify({"message": "Logged in", "role": user.role}), 200
@@ -76,3 +77,13 @@ def signup():
         import traceback
         traceback.print_exc()
         return jsonify({"error": "Internal server error", "details": str(e)}), 500
+
+@auth_bp.route('/me', methods=['GET'])
+def me():
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({"error": "Not logged in"}), 401
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+    return jsonify({"username": user.username, "role": user.role}), 200

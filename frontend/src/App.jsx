@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import AuthEntry from './components/AuthEntry';
 import LoginForm from './components/LoginForm';
 import SignupForm from './components/SignupForm';
@@ -7,9 +7,20 @@ import ClientPortal from './components/profiles/ClientPortal';
 import CandidatePortal from './components/profiles/CandidatePortal';
 import Marketplace from './components/marketplace/Marketplace';
 import Inbox from './components/chat/Inbox';
+import api from './services/api';
 
 function App() {
   const [role, setRole] = useState(null);
+
+  useEffect(() => {
+    api.get('/auth/me')
+      .then(response => {
+        setRole(response.data.role);
+      })
+      .catch(() => {
+        setRole(null);
+      });
+  }, []);
 
   return (
     <BrowserRouter>

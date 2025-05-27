@@ -5,7 +5,7 @@ const clientService = {
   // 1) Client dashboard
   async getDashboard() {
     const res = await api.get('/client/');
-    return res.data; // { message: "Welcome to the client dashboard" }
+    return { id: res.data.companyId, ...res.data };
   },
 
   // 2) Retrieve client data

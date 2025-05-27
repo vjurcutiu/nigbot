@@ -1,55 +1,40 @@
 import React, { useState } from 'react';
-import { Link, Routes, Route } from 'react-router-dom';
-import clientService from '../../services/clientService';
+import { Link } from 'react-router-dom';
 import jobService from '../../services/jobService';
+import clientService from '../../services/clientService';
 import useFullProfile from '../../hooks/useFullProfile';
 import EditableProfileCard from './EditableProfileCard';
 import { EntityList } from './EntityList';
 import { Button } from '../ui/Button';
 
-export default function ClientPortal() {
+export default function JobPortal() {
   const { data: fullCompany, loading, error } = useFullProfile({
     loadOverview: clientService.getDashboard,
     loadDetails: clientService.getCompany,
   });
 
+  const [jobData, setJobData] = useState(null);
   const [posting, setPosting] = useState(false);
   const [jobTitle, setJobTitle] = useState('');
   const [jobCreated, setJobCreated] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
 
-  if (loading) return <div>Loading client portal…</div>;
-  if (error) return <div className="text-red-600">Error: {error}</div>;
-
-  const {
-    id,
-    name,
-    industry,
-    size,
-    founded_date,
-    website,
-    contact_email,
-    contact_phone,
-    address,
-    city,
-    country,
-    bio,
-    job_positions = []
-  } = fullCompany || {};
+  React.useEffect(() => {
+    if (fullCompany && fullCompany.job_positions && fullCompany.job_positions.length > 0) {
+      const firstJobId = fullCompany.job_positions[0].id;
+      jobService.getJob(firstJobId).then(setJobData).catch(console.error);
+    } else {
+      setJobData(null);
+    }
+  }, [fullCompany]);
 
   const profileFields = [
-    { name: 'id', label: 'ID' },
-    { name: 'name', label: 'Name' },
-    { name: 'industry', label: 'Industry' },
-    { name: 'size', label: 'Size' },
-    { name: 'founded_date', label: 'Founded', type: 'date' },
-    { name: 'website', label: 'Website' },
-    { name: 'contact_email', label: 'Contact Email' },
-    { name: 'contact_phone', label: 'Contact Phone' },
-    { name: 'address', label: 'Address' },
-    { name: 'city', label: 'City' },
-    { name: 'country', label: 'Country' },
-    { name: 'bio', label: 'Bio' }
+    { name: 'title', label: 'Job Title' },
+    { name: 'description', label: 'Description' },
+    { name: 'requirements', label: 'Requirements' },
+    { name: 'location', label: 'Location' },
+    { name: 'employment_type', label: 'Employment Type' },
+    { name: 'remote', label: 'Remote', type: 'boolean' }
   ];
 
   const handlePostJob = async () => {
@@ -63,11 +48,11 @@ export default function ClientPortal() {
         setPosting(false);
         return;
       }
-      const jobData = {
-        company_id: id,
+      const jobDataToCreate = {
+        company_id: fullCompany.id,
         title: jobTitle,
       };
-      const createdJob = await jobService.createJob(jobData);
+      const createdJob = await jobService.createJob(jobDataToCreate);
       setJobCreated(createdJob);
       setJobTitle('');
     } catch (err) {
@@ -77,9 +62,12 @@ export default function ClientPortal() {
     }
   };
 
+  if (loading) return <div>Loading job portal…</div>;
+  if (error) return <div className="text-red-600">Error: {error}</div>;
+
   return (
     <div className="p-4">
-      <h1 className="text-xl font-semibold mb-4">Client Dashboard</h1>
+      <h1 className="text-xl font-semibold mb-4">Job Dashboard</h1>
 
       <Button
         variant="default"
@@ -121,22 +109,28 @@ export default function ClientPortal() {
         </div>
       )}
 
-      <EditableProfileCard title="Company Profile" fields={profileFields} initialData={fullCompany}
-        onSave={(diff) => clientService.updateCompany(fullCompany.id, diff)}/>
+      {jobData && (
+        <>
+          <EditableProfileCard
+            title="Job Profile"
+            fields={profileFields}
+            initialData={jobData}
+            onSave={(diff) => {
+              jobService.updateJob(jobData.id, diff).then(setJobData).catch(console.error);
+            }}
+          />
 
-<EntityList
-  title="Job Positions"
-  items={job_positions}
-  renderItem={({ id, title, department, location, posted_at }) => (
-    <li key={id}>
-      <strong>
-        <Link to={`/job/${id}`} className="text-blue-600 underline">
-          {title}
-        </Link>
-      </strong> — {department} @ {location} (posted on {new Date(posted_at).toLocaleDateString()})
-    </li>
-  )}
-/>
+          <EntityList
+            title="Applications"
+            items={jobData.applications || []}
+            renderItem={({ id, candidate_name, status, applied_at }) => (
+              <li key={id}>
+                <strong>{candidate_name}</strong> — {status} (applied on {new Date(applied_at).toLocaleDateString()})
+              </li>
+            )}
+          />
+        </>
+      )}
 
       <nav className="mt-6">
         <Link to="/marketplace" className="mr-4 underline">Marketplace</Link>

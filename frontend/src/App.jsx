@@ -9,6 +9,7 @@ import Marketplace from './components/marketplace/Marketplace';
 import Inbox from './components/chat/Inbox';
 import api from './services/api';
 import { Layout } from './components/ui/Layout';
+import JobPortal from './components/profiles/JobPortal';
 
 function App() {
   const [role, setRole] = useState(null);
@@ -36,6 +37,8 @@ function App() {
         {/* Protected with Layout */}
         <Route element={<Layout allowedRoles={['client']} />}>
           <Route path="/client/*" element={<ClientPortal />} />
+          <Route path="/job/:jobId" element={<JobPortal />} />
+          <Route path="/jobs/:jobId" element={<JobPortal />} />
         </Route>
         <Route element={<Layout allowedRoles={['candidate']} />}>
           <Route path="/candidate/*" element={<CandidatePortal />} />

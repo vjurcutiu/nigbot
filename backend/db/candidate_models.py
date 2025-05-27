@@ -12,13 +12,13 @@ class CandidateProfile(db.Model):
     profile_picture = db.Column(db.String(255), nullable=True)  # store file path or URL
     summary = db.Column(db.Text, nullable=True)
 
-    user = db.relationship('User', backref=db.backref('candidate_profile', uselist=False))
-    employments = db.relationship('EmploymentHistory', backref='candidate', cascade='all, delete-orphan')
-    documents = db.relationship('LegalDocument', backref='candidate', cascade='all, delete-orphan')
+    user = db.relationship('User')
+    employments = db.relationship('EmploymentHistory')
+    documents = db.relationship('LegalDocument')
     from db.job_models import JobApplication
-    applications = db.relationship('JobApplication', backref='candidate', cascade='all, delete-orphan')
-    candidate_skills = db.relationship('CandidateSkill', backref='candidate_profile', cascade='all, delete-orphan')
-    educations = db.relationship('Education', backref='candidate_profile', cascade='all, delete-orphan')
+    applications = db.relationship('JobApplication', cascade='all, delete-orphan')
+    candidate_skills = db.relationship('CandidateSkill')
+    educations = db.relationship('Education')
 
 
 class EmploymentHistory(db.Model):

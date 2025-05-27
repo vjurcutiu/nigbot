@@ -33,8 +33,8 @@ class Company(db.Model):
     updated_at = db.Column(db.DateTime, nullable=False, server_default=db.func.now(), onupdate=db.func.now())
 
     # Relationships
-    owner = db.relationship('User', backref=db.backref('company', uselist=False))
-    job_positions = db.relationship('JobPosition', backref='company', cascade='all, delete-orphan')
+    owner = db.relationship('User')
+    job_positions = db.relationship('JobPosition', cascade='all, delete-orphan')
 
     def __repr__(self):
         return f"<Company {self.name}>"

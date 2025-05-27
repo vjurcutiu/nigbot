@@ -15,6 +15,7 @@ class CandidateProfile(db.Model):
     user = db.relationship('User', backref=db.backref('candidate_profile', uselist=False))
     employments = db.relationship('EmploymentHistory', backref='candidate', cascade='all, delete-orphan')
     documents = db.relationship('LegalDocument', backref='candidate', cascade='all, delete-orphan')
+    from db.job_models import JobApplication
     applications = db.relationship('JobApplication', backref='candidate', cascade='all, delete-orphan')
     candidate_skills = db.relationship('CandidateSkill', backref='candidate_profile', cascade='all, delete-orphan')
     educations = db.relationship('Education', backref='candidate_profile', cascade='all, delete-orphan')
@@ -40,24 +41,12 @@ class LegalDocument(db.Model):
     uploaded_at = db.Column(db.DateTime, nullable=False, server_default=db.func.now())
 
 
-class JobApplication(db.Model):
-    __tablename__ = 'job_applications'
-    id = db.Column(db.Integer, primary_key=True)
-    candidate_id = db.Column(db.Integer, db.ForeignKey('candidate_profiles.id'), nullable=False)
-    job_title = db.Column(db.String(150), nullable=False)
-    company_name = db.Column(db.String(150), nullable=True)
-    applied_at = db.Column(db.DateTime, nullable=False, server_default=db.func.now())
-    status = db.Column(db.String(50), nullable=False, default='Applied')  # e.g., Applied, Interview, Offer, Rejected
-    resume_path = db.Column(db.String(255), nullable=True)
-    cover_letter_path = db.Column(db.String(255), nullable=True)
 
 
-# Optional: Additional tables for skills and education
 class Skill(db.Model):
     __tablename__ = 'skills'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True, nullable=False)
-
 
 class CandidateSkill(db.Model):
     __tablename__ = 'candidate_skills'

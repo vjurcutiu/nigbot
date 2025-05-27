@@ -38,22 +38,3 @@ class Company(db.Model):
 
     def __repr__(self):
         return f"<Company {self.name}>"
-
-
-class JobPosition(db.Model):
-    __tablename__ = 'job_positions'
-    id = db.Column(db.Integer, primary_key=True)
-    company_id = db.Column(db.Integer, db.ForeignKey('companies.id'), nullable=False)
-    
-    title = db.Column(db.String(150), nullable=False)
-    description = db.Column(db.Text, nullable=True)
-    requirements = db.Column(db.Text, nullable=True)
-    location = db.Column(db.String(150), nullable=True)  # if different from company HQ
-    employment_type = db.Column(db.String(50), nullable=True)  # e.g., 'Full-time', 'Part-time', 'Contract'
-    remote = db.Column(db.Boolean, nullable=False, default=False)
-    
-    posted_at = db.Column(db.DateTime, nullable=False, server_default=db.func.now())
-    expires_at = db.Column(db.DateTime, nullable=True)
-
-    def __repr__(self):
-        return f"<JobPosition {self.title} @ {self.company.name}>"

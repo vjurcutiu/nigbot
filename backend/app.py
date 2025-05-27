@@ -10,12 +10,10 @@ from blueprints.chat.routes import init_app as chat_init_app
 from extensions import socketio, login_manager
 
 
-from db.models import db
-from db.user_models import User
-from db.candidate_models import (
-    CandidateProfile, EmploymentHistory,
+from db.models import (
+    db, CandidateProfile, EmploymentHistory,
     LegalDocument, JobApplication,
-    Skill, CandidateSkill, Education
+    Skill, CandidateSkill, Education, User
 )
 
 from datetime import timedelta

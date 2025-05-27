@@ -1,5 +1,4 @@
-from db.company_models import Company, JobPosition
-from db.models import db
+from db.models import Company, JobPosition, db
 from sqlalchemy.exc import SQLAlchemyError
 
 class CompanyService:

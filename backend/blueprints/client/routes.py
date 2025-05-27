@@ -1,7 +1,6 @@
 # blueprints/client/routes.py
 from flask import Blueprint, request, jsonify, session
-from db.company_models import Company, JobPosition
-from db.models import db
+from db.models import Company, JobPosition, db
 
 client_bp = Blueprint('client', __name__)
 

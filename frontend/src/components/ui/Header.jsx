@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import authService from '../../services/authService';
 
-export function Header({ userName }) {
+export function Header({ userName, userId, role }) {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -16,6 +16,16 @@ export function Header({ userName }) {
     }
   };
 
+  const getProfileLink = () => {
+    if (role === 'client') {
+      return '/client';
+    } else if (role === 'candidate') {
+      return '/candidate';
+    } else {
+      return '/profile';
+    }
+  };
+
   return (
     <header className="bg-gray-100 p-4 flex justify-between items-center shadow-md">
       <div className="text-lg font-semibold">
@@ -25,7 +35,7 @@ export function Header({ userName }) {
         <Link to="/chat" className="text-blue-600 hover:underline">
           Chatroom
         </Link>
-        <Link to="/profile" className="text-blue-600 hover:underline">
+        <Link to={getProfileLink()} className="text-blue-600 hover:underline">
           Profile
         </Link>
         <Link to="/marketplace" className="text-blue-600 hover:underline">

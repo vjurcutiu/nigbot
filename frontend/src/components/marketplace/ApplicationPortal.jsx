@@ -1,101 +1,61 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { UserContext } from '../../contexts/UserContext';
 import api from '../../services/api';
 
 export default function ApplicationPortal() {
-  const { jobId } = useParams();
-  const navigate = useNavigate();
+  const { applicationId } = useParams();
   const { user } = useContext(UserContext);
-  const [job, setJob] = useState(null);
-  const [loadingJob, setLoadingJob] = useState(true);
+  const [application, setApplication] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [submitting, setSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState(null);
-  const [resumePath, setResumePath] = useState('');
-  const [coverLetterPath, setCoverLetterPath] = useState('');
 
   useEffect(() => {
-    async function fetchJob() {
-      setLoadingJob(true);
+    async function fetchApplication() {
+      setLoading(true);
       try {
-        const response = await api.get(`/jobs/${jobId}`);
-        setJob(response.data);
+        const response = await api.get(`/applications/${applicationId}`);
+        setApplication(response.data);
         setError(null);
       } catch (err) {
-        setError(err.response?.data?.error || 'Failed to load job details');
+        setError(err.response?.data?.error || 'Failed to load application details');
       } finally {
-        setLoadingJob(false);
+        setLoading(false);
       }
     }
-    fetchJob();
-  }, [jobId]);
+    fetchApplication();
+  }, [applicationId]);
 
-  if (loadingJob) return <div>Loading job details...</div>;
+  if (loading) return <div>Loading application details...</div>;
   if (error) return <div className="text-red-600">Error: {error}</div>;
   if (!user || user.loading) return <div>Loading user info...</div>;
-  if (!user.candidateId) return <div>You must be a candidate to apply for this job.</div>;
+  if (!application) return <div>Application not found.</div>;
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setSubmitting(true);
-    setSubmitError(null);
+  const isCandidateOwner = user.candidateId && application.candidate_id === user.candidateId;
+  const isClientUser = user.role === 'client';
 
-    try {
-      await api.post(`/jobs/${jobId}/apply`, {
-        candidate_id: user.candidateId,
-        resume_path: resumePath || null,
-        cover_letter_path: coverLetterPath || null,
-      });
-      setSubmitting(false);
-      // Redirect or show success message
-      navigate('/marketplace', { replace: true });
-    } catch (err) {
-      setSubmitError(err.response?.data?.error || 'Failed to submit application');
-      setSubmitting(false);
-    }
-  };
-
-  return (
-    <>
-      <h2 className="text-2xl font-bold mb-4">Apply for: {job.title}</h2>
-      <p className="mb-4">{job.description}</p>
-
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label htmlFor="resumePath" className="block font-medium mb-1">Resume Path (optional)</label>
-          <input
-            type="text"
-            id="resumePath"
-            value={resumePath}
-            onChange={(e) => setResumePath(e.target.value)}
-            placeholder="Path or URL to your resume"
-            className="w-full border rounded p-2"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="coverLetterPath" className="block font-medium mb-1">Cover Letter Path (optional)</label>
-          <input
-            type="text"
-            id="coverLetterPath"
-            value={coverLetterPath}
-            onChange={(e) => setCoverLetterPath(e.target.value)}
-            placeholder="Path or URL to your cover letter"
-            className="w-full border rounded p-2"
-          />
-        </div>
-
-        {submitError && <div className="text-red-600">{submitError}</div>}
-
-        <button
-          type="submit"
-          disabled={submitting}
-          className="bg-blue-600 text-white px-4 py-2 rounded disabled:opacity-50"
-        >
-          {submitting ? 'Submitting...' : 'Submit Application'}
-        </button>
-      </form>
-    </>
-  );
+  if (isCandidateOwner) {
+    return (
+      <div>
+        <h2 className="text-2xl font-bold mb-4">Your Application for: {application.job_title}</h2>
+        <p>Status: {application.status}</p>
+        <p>Applied on: {new Date(application.applied_at).toLocaleDateString()}</p>
+        <p>Cover Letter: {application.cover_letter_path || 'None'}</p>
+        <p>Resume: {application.resume_path || 'None'}</p>
+      </div>
+    );
+  } else if (isClientUser) {
+    return (
+      <div>
+        <h2 className="text-2xl font-bold mb-4">Application from: {application.candidate_name}</h2>
+        <p>Job: {application.job_title}</p>
+        <p>Status: {application.status}</p>
+        <p>Applied on: {new Date(application.applied_at).toLocaleDateString()}</p>
+        <p>Cover Letter: {application.cover_letter_path || 'None'}</p>
+        <p>Resume: {application.resume_path || 'None'}</p>
+      </div>
+    );
+  } else {
+    return <div>You do not have permission to view this application.</div>;
+  }
 }

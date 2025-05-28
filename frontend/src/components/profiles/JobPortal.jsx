@@ -10,6 +10,7 @@ import { UserContext } from '../../contexts/UserContext';
 export default function JobPortal() {
   const { user } = useContext(UserContext);
   const [jobData, setJobData] = useState(null);
+  const [applications, setApplications] = useState([]);
   const [posting, setPosting] = useState(false);
   const [jobTitle, setJobTitle] = useState('');
   const [jobCreated, setJobCreated] = useState(null);
@@ -21,14 +22,31 @@ export default function JobPortal() {
   useEffect(() => {
     setLoading(true);
     if (user?.role === 'client') {
+      console.log('JobPortal: user.company:', user.company);
       if (!user.company) {
         clientService.getDashboard()
-          .then(data => setFullCompany(data.company))
+          .then(data => {
+            console.log('JobPortal: getDashboard data:', data);
+            if (data && data.id) {
+              return clientService.getCompany(data.id);
+            }
+            return null;
+          })
+          .then(fullCompanyData => {
+            console.log('JobPortal: fullCompanyData:', fullCompanyData);
+            setFullCompany(fullCompanyData);
+          })
           .catch(() => setFullCompany(null))
           .finally(() => setLoading(false));
       } else {
-        setFullCompany(user.company);
-        setLoading(false);
+        console.log('JobPortal: fetching full company for user.company.id:', user.company.id);
+        clientService.getCompany(user.company.id)
+          .then(fullCompanyData => {
+            console.log('JobPortal: fullCompanyData:', fullCompanyData);
+            setFullCompany(fullCompanyData);
+          })
+          .catch(() => setFullCompany(null))
+          .finally(() => setLoading(false));
       }
     } else {
       setFullCompany(null);
@@ -43,12 +61,47 @@ export default function JobPortal() {
       // Fetch job data without company ownership context
       // Assuming jobId is available, here we simulate with a fixed jobId or prop
       const jobId = 1; // Replace with actual jobId from props or route params
+      console.log('JobPortal: fetching job and applications for jobId:', jobId);
       jobService.getJob(jobId)
-        .then(setJobData)
+        .then((job) => {
+          console.log('JobPortal: fetched job:', job);
+          setJobData(job);
+          // Fetch applications for this job
+          return jobService.getJobApplications(job.id);
+        })
+        .then((apps) => {
+          console.log('JobPortal: fetched applications:', apps);
+          setApplications(apps);
+        })
         .catch(console.error)
         .finally(() => setLoading(false));
     }
   }, [user, fullCompany]);
+  
+  useEffect(() => {
+    setLoading(true);
+    if (fullCompany && fullCompany.job_positions && fullCompany.job_positions.length > 0) {
+      const firstJobId = fullCompany.job_positions[0].id;
+      console.log('JobPortal: fetching job and applications for firstJobId:', firstJobId);
+      jobService.getJob(firstJobId)
+        .then((job) => {
+          console.log('JobPortal: fetched job:', job);
+          setJobData(job);
+          // Fetch applications for this job
+          return jobService.getJobApplications(job.id);
+        })
+        .then((apps) => {
+          console.log('JobPortal: fetched applications:', apps);
+          setApplications(apps);
+        })
+        .catch(console.error)
+        .finally(() => setLoading(false));
+    } else {
+      setJobData(null);
+      setApplications([]);
+      setLoading(false);
+    }
+  }, [fullCompany]);
 
   useEffect(() => {
     setLoading(true);
@@ -135,15 +188,19 @@ export default function JobPortal() {
             initialData={jobData}
             editable={false}
           />
-          <Button
-            onClick={() => {
-              // Redirect to application portal for this job
-              window.location.href = `/jobs/${jobData.id}/apply`;
-            }}
-            className="mb-4"
-          >
-            Apply
-          </Button>
+          {applications.some(app => app.candidate_name === user.fullName) ? (
+            <div className="mb-4 text-gray-600">You have already applied to this job.</div>
+          ) : (
+            <Button
+              onClick={() => {
+                // Redirect to job apply form for this job
+                window.location.href = `/jobs/${jobData.id}/apply`;
+              }}
+              className="mb-4"
+            >
+              Apply
+            </Button>
+          )}
         </>
       )}
 
@@ -203,10 +260,12 @@ export default function JobPortal() {
 
               <EntityList
                 title="Applications"
-                items={jobData.applications || []}
+                items={applications}
                 renderItem={({ id, candidate_name, status, applied_at }) => (
                   <li key={id}>
-                    <strong>{candidate_name}</strong> — {status} (applied on {new Date(applied_at).toLocaleDateString()})
+                    <Link to={`/applications/${id}`} className="text-blue-600 underline">
+                      <strong>{candidate_name}</strong> — {status} (applied on {new Date(applied_at).toLocaleDateString()})
+                    </Link>
                   </li>
                 )}
               />

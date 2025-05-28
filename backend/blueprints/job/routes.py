@@ -177,9 +177,14 @@ def list_company_jobs(company_id: int):
 
 @job_bp.route("/jobs/<int:job_id>/applications", methods=["GET"])
 def list_job_applications(job_id: int):
-    job = JobPosition.query.get_or_404(job_id)
-    applications = [application_to_dict(a) for a in job.job_applications]
-    return jsonify(applications)
+    try:
+        job = JobPosition.query.get_or_404(job_id)
+        applications = [application_to_dict(a) for a in job.job_applications]
+        return jsonify(applications)
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": "Failed to fetch applications", "details": str(e)}), 500
 
 
 @job_bp.route("/jobs/<int:job_id>/apply", methods=["POST"])
@@ -219,6 +224,21 @@ def apply_to_job(job_id: int):
 # ---------------------------------------------------------------------------
 # Blueprint registration helper
 # ---------------------------------------------------------------------------
+
+@job_bp.route("/applications/<int:application_id>", methods=["GET"])
+def get_application(application_id: int):
+    application = JobApplication.query.get_or_404(application_id)
+    return jsonify({
+        "id": application.id,
+        "candidate_id": application.candidate_id,
+        "candidate_name": application.candidate.full_name if application.candidate else None,
+        "job_position_id": application.job_position_id,
+        "job_title": application.job_position.title if application.job_position else None,
+        "applied_at": application.applied_at.isoformat() if application.applied_at else None,
+        "status": application.status,
+        "resume_path": application.resume_path,
+        "cover_letter_path": application.cover_letter_path,
+    })
 
 def register_job_routes(app):
     """Call this from your application factory to register the blueprint."""

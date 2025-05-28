@@ -10,6 +10,7 @@ import Inbox from './components/chat/Inbox';
 import { Layout } from './components/ui/Layout';
 import JobPortal from './components/profiles/JobPortal';
 import ApplicationPortal from './components/marketplace/ApplicationPortal';
+import JobApplyForm from './components/marketplace/JobApplyForm';
 import { UserProvider, UserContext } from './contexts/UserContext';
 import RedirectToProfile from './components/ui/RedirectToProfile';
 
@@ -36,7 +37,8 @@ function AppRoutes() {
         <Route path="/client/:companyId/public" element={<ClientPortal editable={false} />} />
         <Route path="/job/:jobId" element={<JobPortal />} />
         <Route path="/jobs/:jobId" element={<JobPortal />} />
-        <Route path="/jobs/:jobId/apply" element={<ApplicationPortal />} />
+        <Route path="/jobs/:jobId/apply" element={<JobApplyForm />} />
+        <Route path="/applications/:applicationId" element={<ApplicationPortal />} />
       </Route>
     <Route element={<Layout allowAnyAuthenticated={true} />}>
       <Route path="/candidate" element={<RedirectToProfile role="candidate" />} />

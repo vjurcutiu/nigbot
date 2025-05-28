@@ -102,7 +102,9 @@ export default function CandidatePortal({ editable = true }) {
         items={applications}
         renderItem={({ id, position, company, date_applied }) => (
           <li key={id}>
-            {position} @ {company} (applied on {new Date(date_applied).toLocaleDateString()})
+            <Link to={`/applications/${id}`} className="text-blue-600 underline">
+              {position} @ {company} (applied on {new Date(date_applied).toLocaleDateString()})
+            </Link>
           </li>
         )}
       />

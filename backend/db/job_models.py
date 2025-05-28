@@ -17,6 +17,7 @@ class JobPosition(db.Model):
     expires_at = db.Column(db.DateTime, nullable=True)
 
     company = db.relationship('Company')
+    job_applications = db.relationship('JobApplication', back_populates='job_position', cascade='all, delete-orphan')
 
     def __repr__(self):
         return f"<JobPosition {self.title} @ {self.company.name}>"
@@ -33,7 +34,7 @@ class JobApplication(db.Model):
     cover_letter_path = db.Column(db.String(255), nullable=True)
 
     candidate = db.relationship('CandidateProfile')
-    job_position = db.relationship('JobPosition', cascade='all, delete-orphan', single_parent=True)
+    job_position = db.relationship('JobPosition', back_populates='job_applications', cascade='all, delete-orphan', single_parent=True)
 
     def __repr__(self):
         return f"<JobApplication {self.candidate.full_name} applied to {self.job_position.title}>"

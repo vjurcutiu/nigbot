@@ -18,7 +18,21 @@ def login():
         session.permanent = True
         session['user_id'] = user.id
         session['role'] = user.role
-        return jsonify({"message": "Logged in", "role": user.role, "user_id": user.id}), 200
+
+        response_data = {"message": "Logged in", "role": user.role, "user_id": user.id}
+
+        if user.role == 'client':
+            from db.company_models import Company
+            company = Company.query.filter_by(user_id=user.id).first()
+            if company:
+                response_data["company_id"] = company.id
+        elif user.role == 'candidate':
+            from db.candidate_models import CandidateProfile
+            candidate = CandidateProfile.query.filter_by(user_id=user.id).first()
+            if candidate:
+                response_data["candidate_id"] = candidate.id
+
+        return jsonify(response_data), 200
     return jsonify({"error": "Invalid credentials"}), 401
 
 @auth_bp.route('/logout', methods=['POST'])

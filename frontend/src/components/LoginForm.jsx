@@ -14,11 +14,13 @@ export default function LoginForm({ onLogin }) {
       console.log('Login response:', res);
       if (res.role) {
         onLogin(res);
-        // redirect based on role and userId:
+        // redirect based on role and proper entity ID:
         if (res.role === 'client') {
-          navigate(`/client/${res.user_id}`);
+          const companyId = res.company_id || res.user_id;
+          navigate(`/client/${companyId}`);
         } else if (res.role === 'candidate') {
-          navigate(`/candidate/${res.user_id}`);
+          const candidateId = res.candidate_id || res.user_id;
+          navigate(`/candidate/${candidateId}`);
         } else {
           navigate('/');
         }

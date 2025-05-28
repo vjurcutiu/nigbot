@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import api from '../services/api';
+import authService from '../services/authService';
 import { Link, useNavigate } from 'react-router-dom';
-
 
 export default function LoginForm({ onLogin }) {
   const [user, setUser] = useState({ username: '', password: '' });
@@ -11,16 +10,27 @@ export default function LoginForm({ onLogin }) {
   const submit = async e => {
     e.preventDefault();
     try {
-      const res = await api.post('/auth/login', user);
-      onLogin(res.data.role);
-    // redirect based on role:
-    if (res.data.role === 'client') {
-      navigate('/client');
-    } else {
-      navigate('/candidate');
-    }
+      const res = await authService.login(user.username, user.password);
+      if (res.role) {
+        onLogin(res);
+        // redirect based on role:
+        if (res.role === 'client') {
+          navigate('/client');
+        } else {
+          navigate('/candidate');
+        }
+      } else {
+        setError('Login failed: no role returned');
+      }
     } catch (err) {
-      setError(err.response.data.error);
+      console.error('Login error:', err);
+      if (err.response && err.response.data && err.response.data.error) {
+        setError(err.response.data.error);
+      } else if (err.message) {
+        setError(err.message);
+      } else {
+        setError('Login failed');
+      }
     }
   };
 

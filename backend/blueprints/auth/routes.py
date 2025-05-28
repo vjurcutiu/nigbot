@@ -94,4 +94,5 @@ def me():
     user = User.query.get(user_id)
     if not user:
         return jsonify({"error": "User not found"}), 404
-    return jsonify({"username": user.username, "role": user.role}), 200
+    # Return user id along with username and role
+    return jsonify({"user_id": user.id, "username": user.username, "role": user.role}), 200

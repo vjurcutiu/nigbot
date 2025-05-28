@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import useSWR, { mutate } from 'swr';
 import useSWRInfinite from 'swr/infinite';
-import io from 'socket.io-client';
+import { io } from 'socket.io-client';
+import Conversation from './Conversation';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 const fetcher = async url => {
@@ -22,6 +23,7 @@ const fetcher = async url => {
 // Initialize socket outside component to avoid reconnects
 const socket = io(`${API_URL}/inbox`, {
   auth: { token: localStorage.getItem('token') },
+  transports: ['websocket', 'polling'],
 });
 
 export default function Inbox() {
@@ -145,17 +147,12 @@ export default function Inbox() {
       {/* Sidebar */}
       <div className="w-1/4 border-r p-2 overflow-y-auto">
         {convos.map(conv => (
-          <div
+          <Conversation
             key={conv.id}
-            className={`p-2 cursor-pointer hover:bg-gray-100 ${activeConv === conv.id ? 'bg-gray-200' : ''}`}
-            onClick={() => setActiveConv(conv.id)}
-          >
-            <div className="font-semibold">Conversation {conv.id}</div>
-            <div className="text-sm text-gray-600 truncate">{conv.last_message?.body}</div>
-            {conv.unread_count > 0 && (
-              <span className="bg-red-500 text-white text-xs px-1 rounded">{conv.unread_count}</span>
-            )}
-          </div>
+            conversation={conv}
+            isActive={activeConv === conv.id}
+            onSelect={setActiveConv}
+          />
         ))}
       </div>
 

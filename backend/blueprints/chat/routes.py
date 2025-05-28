@@ -1,11 +1,69 @@
-from flask import Blueprint, request, jsonify, abort
+from flask import Blueprint, request, jsonify, abort, current_app, make_response, Response
 from flask_login import login_required, current_user
-from db.models import db, Conversation, Participant, Message
+from db.models import db, Conversation, Participant, Message, User
 from datetime import datetime
-from flask_socketio import emit, join_room, leave_room
+from flask_socketio import emit, join_room, leave_room, disconnect
 from extensions import socketio
+import traceback
+
+# SocketIO event handlers
+def register_socket_handlers():
+    @socketio.on('connect', namespace='/inbox')
+    def on_connect():
+        print("SocketIO client connected")
+        # No automatic join, wait for join event with token
+        pass
+
+    @socketio.on('join', namespace='/inbox')
+    def on_join(data):
+        print("SocketIO join event data:", data)
+        token = data.get('token')
+        conv_id = data.get('conversation_id')
+        user = verify_token(token)
+        if not user:
+            print("SocketIO join unauthorized: invalid token")
+            disconnect()
+            return
+        conv = Conversation.query.get(conv_id)
+        if not conv or not Participant.query.filter_by(conversation_id=conv.id, user_id=user.id).first():
+            print("SocketIO join unauthorized: user not participant")
+            disconnect()
+            return
+        room = f'conv_{conv.id}'
+        join_room(room)
+        emit('joined', {'conversation_id': conv.id}, room=room)
+        print(f"User {user.id} joined room {room}")
+
+    @socketio.on('leave', namespace='/inbox')
+    def on_leave(data):
+        print("SocketIO leave event data:", data)
+        token = data.get('token')
+        conv_id = data.get('conversation_id')
+        user = verify_token(token)
+        if not user:
+            print("SocketIO leave unauthorized: invalid token")
+            disconnect()
+            return
+        room = f'conv_{conv_id}'
+        leave_room(room)
+        emit('left', {'conversation_id': conv_id})
+        print(f"User {user.id} left room {room}")
+import jwt
 
 inbox_bp = Blueprint('inbox', __name__, url_prefix='/api')
+
+# Helper to verify token and set current_user for socket events
+def verify_token(token):
+    try:
+        secret_key = current_app.config['SECRET_KEY']
+        data = jwt.decode(token, secret_key, algorithms=["HS256"])
+        user_id = data.get('user_id')
+        if not user_id:
+            return None
+        user = User.query.get(user_id)
+        return user
+    except Exception as e:
+        return None
 
 # Helper to get conversation or 404
 def get_conversation_or_404(conv_id):
@@ -112,26 +170,51 @@ def post_message(conv_id):
 @inbox_bp.route('/conversations/<int:conv_id>/read', methods=['POST'])
 @login_required
 def mark_read(conv_id):
-    conv, part = get_conversation_or_404(conv_id)
-    part.last_read = datetime.utcnow()
-    db.session.commit()
-    return '', 204
+    print("mark_read called with conv_id:", conv_id)
+    try:
+        conv, part = get_conversation_or_404(conv_id)
+        part.last_read = datetime.utcnow()
+        db.session.commit()
+        print("mark_read successful")
+        return Response(status=204)
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        response = jsonify({'error': str(e)})
+        response.status_code = 500
+        return response
 
 # SocketIO event handlers
 def register_socket_handlers():
+    @socketio.on('connect', namespace='/inbox')
+    def on_connect():
+        # No automatic join, wait for join event with token
+        pass
+
     @socketio.on('join', namespace='/inbox')
-    @login_required
     def on_join(data):
+        token = data.get('token')
         conv_id = data.get('conversation_id')
-        conv, part = get_conversation_or_404(conv_id)
+        user = verify_token(token)
+        if not user:
+            disconnect()
+            return
+        conv = Conversation.query.get(conv_id)
+        if not conv or not Participant.query.filter_by(conversation_id=conv.id, user_id=user.id).first():
+            disconnect()
+            return
         room = f'conv_{conv.id}'
         join_room(room)
         emit('joined', {'conversation_id': conv.id}, room=room)
 
     @socketio.on('leave', namespace='/inbox')
-    @login_required
     def on_leave(data):
+        token = data.get('token')
         conv_id = data.get('conversation_id')
+        user = verify_token(token)
+        if not user:
+            disconnect()
+            return
         room = f'conv_{conv_id}'
         leave_room(room)
         emit('left', {'conversation_id': conv_id})

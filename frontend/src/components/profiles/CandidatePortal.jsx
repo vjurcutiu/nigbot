@@ -3,7 +3,7 @@ import { Link, Routes, Route, useParams } from 'react-router-dom';
 import candidateService from '../../services/candidateService';
 import useFullProfile from '../../hooks/useFullProfile';
 import { EntityList } from './EntityList';
-import ProfileCard from './ProfileCard';
+import EditableProfileCard from './EditableProfileCard';
 import { Button } from '../ui/Button';
 import { UserContext } from '../../contexts/UserContext';
 
@@ -49,19 +49,35 @@ export default function CandidatePortal({ editable = true }) {
     educations = [],
   } = fullData || {};
 
-  const isOwner = user?.userId && profile?.user_id && user.userId === profile.user_id;
+  const isOwner = user?.candidateId && profileId && user.candidateId.toString() === profileId.toString();
 
-  // Transform profile into fields array for ProfileCard
+  // Transform profile into fields array for EditableProfileCard
   const profileFields = Object.entries(profile).map(([key, value]) => ({
+    name: key,
     label: key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
     value: typeof value === 'object' ? JSON.stringify(value) : value,
   }));
+
+  const handleSave = async (diff) => {
+    try {
+      await candidateService.updateProfile(profileId, diff);
+    } catch (error) {
+      console.error('Failed to save candidate profile:', error);
+      throw error;
+    }
+  };
 
   return (
     <div className="p-4">
       <h1 className="text-xl font-semibold mb-4">Candidate Dashboard</h1>
 
-      <ProfileCard title="Profile" fields={profileFields} editable={isOwner && editable} />
+      <EditableProfileCard
+        title="Profile"
+        fields={profileFields}
+        initialData={profile}
+        onSave={handleSave}
+        editable={isOwner && editable}
+      />
 
       <EntityList
         title="Employments"

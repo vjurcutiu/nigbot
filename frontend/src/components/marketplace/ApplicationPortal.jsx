@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { UserContext } from '../../contexts/UserContext';
 import api from '../../services/api';
 
@@ -13,18 +13,22 @@ export default function ApplicationPortal() {
   useEffect(() => {
     async function fetchApplication() {
       setLoading(true);
+      console.log('ApplicationPortal: user:', user);
       try {
         const response = await api.get(`/applications/${applicationId}`);
         setApplication(response.data);
         setError(null);
       } catch (err) {
+        console.error('ApplicationPortal: failed to load application details', err);
         setError(err.response?.data?.error || 'Failed to load application details');
       } finally {
         setLoading(false);
       }
     }
-    fetchApplication();
-  }, [applicationId]);
+    if (user && !user.loading) {
+      fetchApplication();
+    }
+  }, [applicationId, user]);
 
   if (loading) return <div>Loading application details...</div>;
   if (error) return <div className="text-red-600">Error: {error}</div>;
@@ -47,7 +51,9 @@ export default function ApplicationPortal() {
   } else if (isClientUser) {
     return (
       <div>
-        <h2 className="text-2xl font-bold mb-4">Application from: {application.candidate_name}</h2>
+        <h2 className="text-2xl font-bold mb-4">
+          Application from: <Link to={`/candidate/${application.candidate_id}/full/public`} className="text-blue-600 underline">{application.candidate_name}</Link>
+        </h2>
         <p>Job: {application.job_title}</p>
         <p>Status: {application.status}</p>
         <p>Applied on: {new Date(application.applied_at).toLocaleDateString()}</p>

@@ -21,6 +21,8 @@ def candidate_required(func):
     """Decorator to ensure the user is authenticated as a candidate."""
     def wrapper(*args, **kwargs):
         if 'user_id' not in session or session.get('role') != 'candidate':
+            import logging
+            logging.error(f"Unauthorized access attempt in candidate_required decorator. Session data: {dict(session)}")
             return jsonify({"error": "Unauthorized"}), 401
         return func(*args, **kwargs)
     wrapper.__name__ = func.__name__

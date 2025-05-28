@@ -60,7 +60,7 @@ export default function CandidatePortal({ editable = true }) {
 
   const handleSave = async (diff) => {
     try {
-      await candidateService.updateProfile(profileId, diff);
+      await candidateService.updateFull(profileId, diff);
     } catch (error) {
       console.error('Failed to save candidate profile:', error);
       throw error;

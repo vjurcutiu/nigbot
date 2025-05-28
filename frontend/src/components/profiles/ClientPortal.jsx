@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useCallback } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import clientService from '../../services/clientService';
 import jobService from '../../services/jobService';
@@ -17,9 +17,12 @@ export default function ClientPortal() {
     return <div>Loading profile...</div>;
   }
 
+  const loadOverview = useCallback(() => clientService.getDashboard(), []);
+  const loadDetails = useCallback((id) => clientService.getCompany(id), []);
+
   const { data: fullCompany, loading, error } = useFullProfile({
-    loadOverview: () => clientService.getDashboard(paramUserId),
-    loadDetails: () => clientService.getCompany(paramUserId),
+    loadOverview,
+    loadDetails,
   });
 
   const isOwner = user?.userId && fullCompany?.user_id && user.userId === fullCompany.user_id;

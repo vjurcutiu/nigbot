@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { Link, Routes, Route } from 'react-router-dom';
 import clientService from '../../services/clientService';
 import jobService from '../../services/jobService';
@@ -6,12 +6,16 @@ import useFullProfile from '../../hooks/useFullProfile';
 import EditableProfileCard from './EditableProfileCard';
 import { EntityList } from './EntityList';
 import { Button } from '../ui/Button';
+import { UserContext } from '../../contexts/UserContext';
 
 export default function ClientPortal() {
   const { data: fullCompany, loading, error } = useFullProfile({
     loadOverview: clientService.getDashboard,
     loadDetails: clientService.getCompany,
   });
+
+  const { user } = useContext(UserContext);
+  const isOwner = user?.userId && fullCompany?.user_id && user.userId === fullCompany.user_id;
 
   const [posting, setPosting] = useState(false);
   const [jobTitle, setJobTitle] = useState('');
@@ -81,17 +85,19 @@ export default function ClientPortal() {
     <div className="p-4">
       <h1 className="text-xl font-semibold mb-4">Client Dashboard</h1>
 
-      <Button
-        variant="default"
-        onClick={() => {
-          const title = prompt('Enter job title:');
-          if (title) setJobTitle(title);
-        }}
-        disabled={posting}
-        className="mb-4"
-      >
-        Post Job
-      </Button>
+      {isOwner && (
+        <Button
+          variant="default"
+          onClick={() => {
+            const title = prompt('Enter job title:');
+            if (title) setJobTitle(title);
+          }}
+          disabled={posting}
+          className="mb-4"
+        >
+          Post Job
+        </Button>
+      )}
 
       {jobTitle && (
         <div className="mb-4">
@@ -122,7 +128,7 @@ export default function ClientPortal() {
       )}
 
       <EditableProfileCard title="Company Profile" fields={profileFields} initialData={fullCompany}
-        onSave={(diff) => clientService.updateCompany(fullCompany.id, diff)}/>
+        onSave={(diff) => clientService.updateCompany(fullCompany.id, diff)} editable={isOwner} />
 
 <EntityList
   title="Job Positions"

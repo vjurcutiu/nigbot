@@ -81,8 +81,8 @@ def get_candidate_full_public(candidate_id):
     applications = [
         {
             "id": app.id,
-            "job_title": app.job_title,
-            "company_name": app.company_name,
+            "job_title": app.job_position.title if app.job_position else None,
+            "company_name": app.job_position.company.name if app.job_position and app.job_position.company else None,
             "applied_at": app.applied_at.isoformat(),
             "status": app.status,
             "resume_path": app.resume_path,
@@ -229,8 +229,8 @@ def get_candidate_full(candidate_id):
     applications = [
         {
             "id": app.id,
-            "job_title": app.job_title,
-            "company_name": app.company_name,
+            "job_title": app.job_position.title if app.job_position else None,
+            "company_name": app.job_position.company.name if app.job_position and app.job_position.company else None,
             "applied_at": app.applied_at.isoformat(),
             "status": app.status,
             "resume_path": app.resume_path,

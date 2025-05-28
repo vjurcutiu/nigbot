@@ -136,7 +136,10 @@ export default function JobPortal() {
             editable={false}
           />
           <Button
-            onClick={() => alert('Apply functionality to be implemented')}
+            onClick={() => {
+              // Redirect to application portal for this job
+              window.location.href = `/jobs/${jobData.id}/apply`;
+            }}
             className="mb-4"
           >
             Apply

@@ -9,6 +9,7 @@ import Marketplace from './components/marketplace/Marketplace';
 import Inbox from './components/chat/Inbox';
 import { Layout } from './components/ui/Layout';
 import JobPortal from './components/profiles/JobPortal';
+import ApplicationPortal from './components/marketplace/ApplicationPortal';
 import { UserProvider, UserContext } from './contexts/UserContext';
 import RedirectToProfile from './components/ui/RedirectToProfile';
 
@@ -35,16 +36,17 @@ function AppRoutes() {
         <Route path="/client/:companyId/public" element={<ClientPortal editable={false} />} />
         <Route path="/job/:jobId" element={<JobPortal />} />
         <Route path="/jobs/:jobId" element={<JobPortal />} />
+        <Route path="/jobs/:jobId/apply" element={<ApplicationPortal />} />
       </Route>
-      <Route element={<Layout allowAnyAuthenticated={true} />}>
-        <Route path="/candidate" element={<RedirectToProfile role="candidate" />} />
-        <Route path="/candidate/:userId" element={<CandidatePortal editable={true} />} />
-        <Route path="/candidate/:candidateId/full/public" element={<CandidatePortal editable={false} />} />
-      </Route>
-      <Route element={<Layout allowedRoles={['client', 'candidate']} />}>
-        <Route path="/chat" element={<Inbox />} />
-        <Route path="/marketplace" element={<Marketplace />} />
-      </Route>
+    <Route element={<Layout allowAnyAuthenticated={true} />}>
+      <Route path="/candidate" element={<RedirectToProfile role="candidate" />} />
+      <Route path="/candidate/:userId" element={<CandidatePortal editable={true} />} />
+      <Route path="/candidate/:candidateId/full/public" element={<CandidatePortal editable={false} />} />
+    </Route>
+    <Route element={<Layout allowedRoles={['client', 'candidate']} />}>
+      <Route path="/chat" element={<Inbox />} />
+      <Route path="/marketplace" element={<Marketplace />} />
+    </Route>
 
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/" />} />

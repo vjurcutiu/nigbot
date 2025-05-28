@@ -23,6 +23,15 @@ def hire_candidate(candidate_id):
         if not candidate.user or not hasattr(candidate.user, 'id'):
             return jsonify({"error": "Candidate user information is incomplete"}), 400
 
+        # Check if already hired
+        existing_hire = Hire.query.filter_by(
+            client_id=client_id,
+            candidate_id=candidate_id,
+            status='active'
+        ).first()
+        if existing_hire:
+            return jsonify({"error": "Candidate has already been hired by this client"}), 400
+
         # Create Hire record
         hire = Hire(
             client_id=client_id,

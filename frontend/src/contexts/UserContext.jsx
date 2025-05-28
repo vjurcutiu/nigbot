@@ -4,7 +4,7 @@ import api from '../services/api';
 export const UserContext = createContext(null);
 
 export const UserProvider = ({ children }) => {
-  const [user, setUser] = useState({ userId: null, candidateId: null, role: null, username: null, loading: true });
+  const [user, setUser] = useState({ userId: null, candidateId: null, role: null, username: null, company: null, loading: true });
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -15,9 +15,13 @@ export const UserProvider = ({ children }) => {
         const username = response.data.username;
 
         let candidateId = null;
+        let company = null;
         if (role === 'candidate') {
           const candidateResponse = await api.get('/candidate/profile');
           candidateId = candidateResponse.data.profile?.id || null;
+        } else if (role === 'client') {
+          const companyResponse = await api.get('/client/');
+          company = companyResponse.data.company || null;
         }
 
         setUser({
@@ -25,10 +29,11 @@ export const UserProvider = ({ children }) => {
           candidateId,
           role,
           username,
+          company,
           loading: false,
         });
       } catch (error) {
-        setUser({ userId: null, candidateId: null, role: null, username: null, loading: false });
+        setUser({ userId: null, candidateId: null, role: null, username: null, company: null, loading: false });
       }
     };
     fetchUser();

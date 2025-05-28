@@ -1,9 +1,10 @@
-import React, { useContext } from 'react';
+import React, { useState, useContext, useCallback } from 'react';
 import { Link, Routes, Route, useParams } from 'react-router-dom';
 import candidateService from '../../services/candidateService';
 import useFullProfile from '../../hooks/useFullProfile';
 import { EntityList } from './EntityList';
 import ProfileCard from './ProfileCard';
+import { Button } from '../ui/Button';
 import { UserContext } from '../../contexts/UserContext';
 
 export default function CandidatePortal({ editable = true }) {
@@ -16,21 +17,24 @@ export default function CandidatePortal({ editable = true }) {
     return <div>Loading profile...</div>;
   }
 
+  const loadOverview = useCallback(() => {
+    if (editable) {
+      return candidateService.getProfile(profileId);
+    } else {
+      return Promise.resolve({ id: profileId });
+    }
+  }, [editable, profileId]);
+  const loadDetails = useCallback(() => {
+    if (editable) {
+      return candidateService.getFull(profileId);
+    } else {
+      return candidateService.getFullPublic(profileId);
+    }
+  }, [editable, profileId]);
+
   const { data: fullData, loading, error } = useFullProfile({
-    loadOverview: () => {
-      if (editable) {
-        return candidateService.getProfile(profileId);
-      } else {
-        return Promise.resolve({ id: profileId });
-      }
-    },
-    loadDetails: () => {
-      if (editable) {
-        return candidateService.getFull(profileId);
-      } else {
-        return candidateService.getFullPublic(profileId);
-      }
-    },
+    loadOverview,
+    loadDetails,
   });
 
   if (loading) return <div>Loading candidate portal...</div>;

@@ -3,7 +3,7 @@ import { Outlet, Navigate } from 'react-router-dom';
 import { Header } from './Header';
 import api from '../../services/api';
 
-export function Layout({ allowedRoles }) {
+export function Layout({ allowedRoles, allowAnyAuthenticated }) {
   const [userName, setUserName] = useState(null);
   const [userId, setUserId] = useState(null);
   const [role, setRole] = useState(null);
@@ -33,7 +33,7 @@ export function Layout({ allowedRoles }) {
     return <div>Loading...</div>;
   }
 
-  if (!role || !allowedRoles.includes(role)) {
+  if (!role || (!allowAnyAuthenticated && !allowedRoles.includes(role))) {
     return <Navigate to="/login" />;
   }
 

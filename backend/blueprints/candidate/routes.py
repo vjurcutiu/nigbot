@@ -15,6 +15,8 @@ from db.models import db
 
 candidate_bp = Blueprint('candidate', __name__)
 
+from blueprints.auth.routes import login_required
+
 def candidate_required(func):
     """Decorator to ensure the user is authenticated as a candidate."""
     def wrapper(*args, **kwargs):
@@ -23,6 +25,102 @@ def candidate_required(func):
         return func(*args, **kwargs)
     wrapper.__name__ = func.__name__
     return wrapper
+
+@candidate_bp.route('/<int:candidate_id>/full/public', methods=['GET'])
+@login_required
+def get_candidate_full_public(candidate_id):
+    """
+    Public endpoint to retrieve a candidate and all related info by candidate ID.
+    Accessible to any authenticated user.
+    """
+    candidate = CandidateProfile.query.options(
+        joinedload(CandidateProfile.employments),
+        joinedload(CandidateProfile.documents),
+        joinedload(CandidateProfile.applications),
+        joinedload(CandidateProfile.candidate_skills).joinedload(CandidateSkill.skill),
+        joinedload(CandidateProfile.educations),
+    ).filter_by(id=candidate_id).first()
+
+    if not candidate:
+        return jsonify({"error": "Candidate not found"}), 404
+
+    profile = {
+        "id": candidate.id,
+        "user_id": candidate.user_id,
+        "full_name": candidate.full_name,
+        "email": candidate.email,
+        "phone": candidate.phone,
+        "city": candidate.city,
+        "country": candidate.country,
+        "profile_picture": candidate.profile_picture,
+        "summary": candidate.summary,
+    }
+
+    employments = [
+        {
+            "id": emp.id,
+            "company_name": emp.company_name,
+            "position": emp.position,
+            "start_date": emp.start_date.isoformat(),
+            "end_date": emp.end_date.isoformat() if emp.end_date else None,
+            "description": emp.description,
+        }
+        for emp in candidate.employments
+    ]
+
+    documents = [
+        {
+            "id": doc.id,
+            "doc_type": doc.doc_type,
+            "file_path": doc.file_path,
+            "uploaded_at": doc.uploaded_at.isoformat(),
+        }
+        for doc in candidate.documents
+    ]
+
+    applications = [
+        {
+            "id": app.id,
+            "job_title": app.job_title,
+            "company_name": app.company_name,
+            "applied_at": app.applied_at.isoformat(),
+            "status": app.status,
+            "resume_path": app.resume_path,
+            "cover_letter_path": app.cover_letter_path,
+        }
+        for app in candidate.applications
+    ]
+
+    skills = [
+        {
+            "skill_id": cs.skill.id,
+            "name": cs.skill.name,
+            "proficiency": cs.proficiency,
+        }
+        for cs in candidate.candidate_skills
+    ]
+
+    educations = [
+        {
+            "id": edu.id,
+            "institution": edu.institution,
+            "degree": edu.degree,
+            "field_of_study": edu.field_of_study,
+            "start_date": edu.start_date.isoformat() if edu.start_date else None,
+            "end_date": edu.end_date.isoformat() if edu.end_date else None,
+            "description": edu.description,
+        }
+        for edu in candidate.educations
+    ]
+
+    return jsonify({
+        "profile": profile,
+        "employments": employments,
+        "documents": documents,
+        "applications": applications,
+        "skills": skills,
+        "educations": educations,
+    })
 
 @candidate_bp.route('/', methods=['GET'])
 @candidate_required

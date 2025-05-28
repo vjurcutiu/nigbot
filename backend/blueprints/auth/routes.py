@@ -5,6 +5,15 @@ from flask_login import login_user, logout_user
 
 auth_bp = Blueprint('auth', __name__)
 
+def login_required(func):
+    """Decorator to ensure the user is authenticated (any role)."""
+    def wrapper(*args, **kwargs):
+        if 'user_id' not in session:
+            return jsonify({"error": "Unauthorized"}), 401
+        return func(*args, **kwargs)
+    wrapper.__name__ = func.__name__
+    return wrapper
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))

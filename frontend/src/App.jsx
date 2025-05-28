@@ -29,15 +29,17 @@ function AppRoutes() {
       <Route path="/signup" element={<SignupForm />} />
 
       {/* Protected with Layout */}
-      <Route element={<Layout allowedRoles={['client']} />}>
+      <Route element={<Layout allowAnyAuthenticated={true} />}>
         <Route path="/client" element={<RedirectToProfile role="client" />} />
-        <Route path="/client/:userId" element={<ClientPortal />} />
+        <Route path="/client/:userId" element={<ClientPortal editable={true} />} />
+        <Route path="/client/:companyId/public" element={<ClientPortal editable={false} />} />
         <Route path="/job/:jobId" element={<JobPortal />} />
         <Route path="/jobs/:jobId" element={<JobPortal />} />
       </Route>
-      <Route element={<Layout allowedRoles={['candidate']} />}>
+      <Route element={<Layout allowAnyAuthenticated={true} />}>
         <Route path="/candidate" element={<RedirectToProfile role="candidate" />} />
-        <Route path="/candidate/:userId" element={<CandidatePortal />} />
+        <Route path="/candidate/:userId" element={<CandidatePortal editable={true} />} />
+        <Route path="/candidate/:candidateId/full/public" element={<CandidatePortal editable={false} />} />
       </Route>
       <Route element={<Layout allowedRoles={['client', 'candidate']} />}>
         <Route path="/chat" element={<Inbox />} />

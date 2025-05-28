@@ -4,6 +4,8 @@ from db.models import Company, JobPosition, db
 
 client_bp = Blueprint('client', __name__)
 
+from blueprints.auth.routes import login_required
+
 def client_required(func):
     """Decorator to ensure the user is authenticated as a client."""
     def wrapper(*args, **kwargs):
@@ -12,6 +14,54 @@ def client_required(func):
         return func(*args, **kwargs)
     wrapper.__name__ = func.__name__
     return wrapper
+
+@client_bp.route('/<int:company_id>/public', methods=['GET'])
+@login_required
+def get_company_public(company_id):
+    """
+    Public endpoint to retrieve full company info by ID.
+    Accessible to any authenticated user.
+    """
+    company = Company.query.get(company_id)
+    if not company:
+        return jsonify({"error": "Company not found"}), 404
+
+    company_data = {
+        "id": company.id,
+        "user_id": company.user_id,
+        "name": company.name,
+        "bio": company.bio,
+        "profile_picture": company.profile_picture,
+        "website": company.website,
+        "industry": company.industry,
+        "size": company.size,
+        "founded_date": company.founded_date.isoformat() if company.founded_date else None,
+        "address": company.address,
+        "city": company.city,
+        "country": company.country,
+        "latitude": company.latitude,
+        "longitude": company.longitude,
+        "contact_email": company.contact_email,
+        "contact_phone": company.contact_phone,
+        "created_at": company.created_at.isoformat(),
+        "updated_at": company.updated_at.isoformat(),
+        "job_positions": []
+    }
+
+    for job in company.job_positions:
+        company_data["job_positions"].append({
+            "id": job.id,
+            "title": job.title,
+            "description": job.description,
+            "requirements": job.requirements,
+            "location": job.location,
+            "employment_type": job.employment_type,
+            "remote": job.remote,
+            "posted_at": job.posted_at.isoformat(),
+            "expires_at": job.expires_at.isoformat() if job.expires_at else None
+        })
+
+    return jsonify(company_data), 200
 
 @client_bp.route('', methods=['GET'])
 @client_bp.route('/', methods=['GET'])

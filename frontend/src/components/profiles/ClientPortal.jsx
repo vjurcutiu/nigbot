@@ -8,17 +8,31 @@ import { EntityList } from './EntityList';
 import { Button } from '../ui/Button';
 import { UserContext } from '../../contexts/UserContext';
 
-export default function ClientPortal() {
-  const { userId: paramUserId } = useParams();
+export default function ClientPortal({ editable = true }) {
+  const { userId: paramUserId, companyId: paramCompanyId } = useParams();
 
   const { user } = useContext(UserContext);
 
-  if (!paramUserId) {
+  const profileId = paramUserId || paramCompanyId;
+
+  if (!profileId) {
     return <div>Loading profile...</div>;
   }
 
-  const loadOverview = useCallback(() => clientService.getDashboard(), []);
-  const loadDetails = useCallback((id) => clientService.getCompany(id), []);
+  const loadOverview = useCallback(() => {
+    if (editable) {
+      return clientService.getDashboard();
+    } else {
+      return Promise.resolve({ id: profileId });
+    }
+  }, [editable, profileId]);
+  const loadDetails = useCallback((id) => {
+    if (editable) {
+      return clientService.getCompany(id);
+    } else {
+      return clientService.getCompanyPublic(id);
+    }
+  }, [editable]);
 
   const { data: fullCompany, loading, error } = useFullProfile({
     loadOverview,
@@ -95,7 +109,7 @@ export default function ClientPortal() {
     <div className="p-4">
       <h1 className="text-xl font-semibold mb-4">Client Dashboard</h1>
 
-      {isOwner && (
+      {isOwner && editable && (
         <Button
           variant="default"
           onClick={() => {
@@ -109,7 +123,7 @@ export default function ClientPortal() {
         </Button>
       )}
 
-      {jobTitle && (
+      {jobTitle && editable && (
         <div className="mb-4">
           <p>Posting job: <strong>{jobTitle}</strong></p>
           <Button variant="default" onClick={handlePostJob} disabled={posting}>
@@ -130,15 +144,15 @@ export default function ClientPortal() {
         </div>
       )}
 
-      {errorMessage && <div className="text-red-600 mb-4">{errorMessage}</div>}
-      {jobCreated && (
+      {errorMessage && editable && <div className="text-red-600 mb-4">{errorMessage}</div>}
+      {jobCreated && editable && (
         <div className="text-green-600 mb-4">
           Job posted successfully: {jobCreated.title} (ID: {jobCreated.id})
         </div>
       )}
 
       <EditableProfileCard title="Company Profile" fields={profileFields} initialData={fullCompany}
-        onSave={(diff) => clientService.updateCompany(fullCompany.id, diff)} editable={isOwner} />
+        onSave={(diff) => clientService.updateCompany(fullCompany.id, diff)} editable={isOwner && editable} />
 
 <EntityList
   title="Job Positions"

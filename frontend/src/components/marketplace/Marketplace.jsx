@@ -146,7 +146,7 @@ export default function Marketplace() {
           {pageItems.map(item => (
           <Link
               key={item.id}
-              to={view === 'companies' ? `/client/${item.id}` : view === 'candidates' ? `/candidate/${item.id}` : `/jobs/${item.id}`}
+          to={view === 'companies' ? `/client/${item.id}/public` : view === 'candidates' ? `/candidate/${item.id}/full/public` : `/jobs/${item.id}`}
               className="border rounded-lg shadow-sm p-4 flex flex-col justify-between cursor-pointer hover:shadow-md transition"
             >
               <h3 className="font-semibold text-lg mb-2">

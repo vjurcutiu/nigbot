@@ -31,6 +31,12 @@ const clientService = {
     } */
   },
 
+  // 5) Fetch full company info by ID for public view (any authenticated user)
+  async getCompanyPublic(companyId) {
+    const res = await api.get(`/client/${companyId}/public`);
+    return res.data;
+  },
+
   // 5) Partially update a company
   //    data may include any of the updatable fields:
   //    name, bio, profile_picture, website, industry, size,

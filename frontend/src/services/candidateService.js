@@ -42,6 +42,12 @@ const candidateService = {
     */
   },
 
+  // 6) Fetch full candidate data by ID for public view (any authenticated user)
+  async getFullPublic(candidateId) {
+    const res = await api.get(`/candidate/${candidateId}/full/public`);
+    return res.data;
+  },
+
   // 6) Partially update candidate (profile + sections)
   //    data can contain keys: profile, employments, documents, applications, skills, educations
   async updateFull(candidateId, data) {

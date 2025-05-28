@@ -34,7 +34,7 @@ class Company(db.Model):
 
     # Relationships
     owner = db.relationship('User')
-    job_positions = db.relationship('JobPosition', cascade='all, delete-orphan')
+    job_positions = db.relationship('JobPosition', cascade='all, delete-orphan', overlaps="company")
 
     def __repr__(self):
         return f"<Company {self.name}>"

@@ -6,10 +6,14 @@ import { EntityList } from './EntityList';
 import EditableProfileCard from './EditableProfileCard';
 import { Button } from '../ui/Button';
 import { UserContext } from '../../contexts/UserContext';
+import api from '../../services/api';
 
 export default function CandidatePortal({ editable = true }) {
   const { userId: paramUserId, candidateId: paramCandidateId } = useParams();
   const { user } = useContext(UserContext);
+  const [isHiring, setIsHiring] = useState(false);
+  const [hireError, setHireError] = useState(null);
+  const [hireSuccess, setHireSuccess] = useState(null);
 
   const profileId = paramUserId || paramCandidateId;
 
@@ -67,9 +71,33 @@ export default function CandidatePortal({ editable = true }) {
     }
   };
 
+  const handleHire = async () => {
+    setIsHiring(true);
+    setHireError(null);
+    setHireSuccess(null);
+    try {
+      const response = await api.post(`/hire/${profileId}`, {});
+      setHireSuccess('Candidate hired successfully! Conversation started.');
+    } catch (err) {
+      setHireError(err.response?.data?.error || err.message || 'Failed to hire candidate');
+    } finally {
+      setIsHiring(false);
+    }
+  };
+
   return (
     <div className="p-4">
       <h1 className="text-xl font-semibold mb-4">Candidate Dashboard</h1>
+
+      {user?.role === 'client' && (
+        <div className="mb-4">
+          <Button onClick={handleHire} disabled={isHiring}>
+            {isHiring ? 'Hiring...' : 'Hire Candidate'}
+          </Button>
+          {hireError && <p className="text-red-600 mt-2">{hireError}</p>}
+          {hireSuccess && <p className="text-green-600 mt-2">{hireSuccess}</p>}
+        </div>
+      )}
 
       <EditableProfileCard
         title="Profile"

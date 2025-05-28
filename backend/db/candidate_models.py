@@ -16,7 +16,7 @@ class CandidateProfile(db.Model):
     employments = db.relationship('EmploymentHistory')
     documents = db.relationship('LegalDocument')
     from db.job_models import JobApplication
-    applications = db.relationship('JobApplication', cascade='all, delete-orphan')
+    applications = db.relationship('JobApplication', cascade='all, delete-orphan', overlaps="candidate")
     candidate_skills = db.relationship('CandidateSkill')
     educations = db.relationship('Education')
 

@@ -9,9 +9,12 @@ from db.models import (
     CandidateSkill,
     Skill,
     Education,
+    Hire,
+    Conversation,
+    Participant,
+    db,
 )
-from db.models import db
-
+from datetime import datetime
 
 candidate_bp = Blueprint('candidate', __name__)
 

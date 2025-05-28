@@ -10,6 +10,7 @@ from blueprints.chat.routes import init_app as chat_init_app
 from blueprints.job.routes import job_bp
 from extensions import socketio, login_manager
 from blueprints.extra.addon import addon_bp
+from blueprints.hire.routes import hire_bp
 
 
 
@@ -54,7 +55,7 @@ app.register_blueprint(candidate_bp, url_prefix='/api/candidate')
 app.register_blueprint(marketplace_bp)
 app.register_blueprint(job_bp)  # Register job blueprint without url_prefix to use /api/jobs
 app.register_blueprint(addon_bp )
-
+app.register_blueprint(hire_bp)
 
 chat_init_app(app)
 

@@ -18,9 +18,9 @@ export function Header({ userName, userId, role }) {
 
   const getProfileLink = () => {
     if (role === 'client') {
-      return '/client';
+      return userId ? `/client/${userId}` : '/client';
     } else if (role === 'candidate') {
-      return '/candidate';
+      return userId ? `/candidate/${userId}` : '/candidate';
     } else {
       return '/profile';
     }

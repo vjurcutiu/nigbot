@@ -18,7 +18,7 @@ def login():
         session.permanent = True
         session['user_id'] = user.id
         session['role'] = user.role
-        return jsonify({"message": "Logged in", "role": user.role}), 200
+        return jsonify({"message": "Logged in", "role": user.role, "user_id": user.id}), 200
     return jsonify({"error": "Invalid credentials"}), 401
 
 @auth_bp.route('/logout', methods=['POST'])

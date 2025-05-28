@@ -144,9 +144,9 @@ export default function Marketplace() {
         {/* Grid of Items */}
         <div className="grid grid-cols-3 gap-4">
           {pageItems.map(item => (
-            <Link
+          <Link
               key={item.id}
-              to={`/${view}/${item.id}`}             // ← dynamic route: "/companies/123" or "/candidates/456" or "/jobs/789"
+              to={view === 'companies' ? `/client/${item.id}` : view === 'candidates' ? `/candidate/${item.id}` : `/jobs/${item.id}`}
               className="border rounded-lg shadow-sm p-4 flex flex-col justify-between cursor-pointer hover:shadow-md transition"
             >
               <h3 className="font-semibold text-lg mb-2">

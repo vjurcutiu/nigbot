@@ -1,14 +1,22 @@
-import React from 'react';
-import { Link, Routes, Route } from 'react-router-dom';
+import React, { useContext } from 'react';
+import { Link, Routes, Route, useParams } from 'react-router-dom';
 import candidateService from '../../services/candidateService';
 import useFullProfile from '../../hooks/useFullProfile';
 import { EntityList } from './EntityList';
 import ProfileCard from './ProfileCard';
+import { UserContext } from '../../contexts/UserContext';
 
 export default function CandidatePortal() {
+  const { userId: paramUserId } = useParams();
+  const { user } = useContext(UserContext);
+
+  if (!paramUserId) {
+    return <div>Loading profile...</div>;
+  }
+
   const { data: fullData, loading, error } = useFullProfile({
-    loadOverview: candidateService.getProfile,
-    loadDetails: candidateService.getFull,
+    loadOverview: () => candidateService.getProfile(paramUserId),
+    loadDetails: () => candidateService.getFull(paramUserId),
   });
 
   if (loading) return <div>Loading candidate portal...</div>;
@@ -23,6 +31,8 @@ export default function CandidatePortal() {
     educations = [],
   } = fullData || {};
 
+  const isOwner = user?.userId && profile?.user_id && user.userId === profile.user_id;
+
   // Transform profile into fields array for ProfileCard
   const profileFields = Object.entries(profile).map(([key, value]) => ({
     label: key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
@@ -33,7 +43,7 @@ export default function CandidatePortal() {
     <div className="p-4">
       <h1 className="text-xl font-semibold mb-4">Candidate Dashboard</h1>
 
-      <ProfileCard title="Profile" fields={profileFields} />
+      <ProfileCard title="Profile" fields={profileFields} editable={isOwner} />
 
       <EntityList
         title="Employments"

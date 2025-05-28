@@ -12,6 +12,7 @@ export function Layout({ allowedRoles }) {
   useEffect(() => {
     api.get('/auth/me')
       .then(response => {
+        console.log('Fetched user role:', response.data.role);
         setRole(response.data.role);
         // Fetch user name or company/candidate name
         // For simplicity, assume username is returned here

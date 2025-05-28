@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { Link, Routes, Route } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import clientService from '../../services/clientService';
 import jobService from '../../services/jobService';
 import useFullProfile from '../../hooks/useFullProfile';
@@ -9,12 +9,19 @@ import { Button } from '../ui/Button';
 import { UserContext } from '../../contexts/UserContext';
 
 export default function ClientPortal() {
-  const { data: fullCompany, loading, error } = useFullProfile({
-    loadOverview: clientService.getDashboard,
-    loadDetails: clientService.getCompany,
-  });
+  const { userId: paramUserId } = useParams();
 
   const { user } = useContext(UserContext);
+
+  if (!paramUserId) {
+    return <div>Loading profile...</div>;
+  }
+
+  const { data: fullCompany, loading, error } = useFullProfile({
+    loadOverview: () => clientService.getDashboard(paramUserId),
+    loadDetails: () => clientService.getCompany(paramUserId),
+  });
+
   const isOwner = user?.userId && fullCompany?.user_id && user.userId === fullCompany.user_id;
 
   const [posting, setPosting] = useState(false);

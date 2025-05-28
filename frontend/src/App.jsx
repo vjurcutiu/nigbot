@@ -10,6 +10,7 @@ import Inbox from './components/chat/Inbox';
 import { Layout } from './components/ui/Layout';
 import JobPortal from './components/profiles/JobPortal';
 import { UserProvider, UserContext } from './contexts/UserContext';
+import RedirectToProfile from './components/ui/RedirectToProfile';
 
 function AppRoutes() {
   const { user, setUser } = useContext(UserContext);
@@ -29,12 +30,14 @@ function AppRoutes() {
 
       {/* Protected with Layout */}
       <Route element={<Layout allowedRoles={['client']} />}>
-        <Route path="/client/*" element={<ClientPortal />} />
+        <Route path="/client" element={<RedirectToProfile role="client" />} />
+        <Route path="/client/:userId" element={<ClientPortal />} />
         <Route path="/job/:jobId" element={<JobPortal />} />
         <Route path="/jobs/:jobId" element={<JobPortal />} />
       </Route>
       <Route element={<Layout allowedRoles={['candidate']} />}>
-        <Route path="/candidate/*" element={<CandidatePortal />} />
+        <Route path="/candidate" element={<RedirectToProfile role="candidate" />} />
+        <Route path="/candidate/:userId" element={<CandidatePortal />} />
       </Route>
       <Route element={<Layout allowedRoles={['client', 'candidate']} />}>
         <Route path="/chat" element={<Inbox />} />

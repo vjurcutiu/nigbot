@@ -11,13 +11,16 @@ export default function LoginForm({ onLogin }) {
     e.preventDefault();
     try {
       const res = await authService.login(user.username, user.password);
+      console.log('Login response:', res);
       if (res.role) {
         onLogin(res);
-        // redirect based on role:
+        // redirect based on role and userId:
         if (res.role === 'client') {
-          navigate('/client');
+          navigate(`/client/${res.user_id}`);
+        } else if (res.role === 'candidate') {
+          navigate(`/candidate/${res.user_id}`);
         } else {
-          navigate('/candidate');
+          navigate('/');
         }
       } else {
         setError('Login failed: no role returned');

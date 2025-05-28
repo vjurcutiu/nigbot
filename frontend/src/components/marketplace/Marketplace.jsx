@@ -1,15 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { fetchCompanies, fetchCandidates, fetchJobs } from '../../services/marketplaceService';
 import { Link } from 'react-router-dom';   // ← add this
+import { UserContext } from '../../contexts/UserContext';
 
 const ITEMS_PER_PAGE = 12;
 
 export default function Marketplace() {
+  const { user } = useContext(UserContext);
   const [companies, setCompanies] = useState([]);
   const [candidates, setCandidates] = useState([]);
   const [jobs, setJobs] = useState([]);
   const [error, setError] = useState(null);
-  const [view, setView] = useState('companies');
+  const [view, setView] = useState(
+    user?.role === 'client' ? 'candidates' : user?.role === 'candidate' ? 'jobs' : 'companies'
+  );
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState({}); // e.g., { location: [], industry: [] }

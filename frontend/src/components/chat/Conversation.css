@@ -9,8 +9,8 @@
   background: transparent;
   outline: none;
   display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xxs);
+  align-items: center;
+  gap: var(--spacing-sm);
 }
 
 .conversation:hover,
@@ -22,10 +22,28 @@
   background: var(--color-selected);
 }
 
+.conversation__avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.conversation__content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 .conversation__title {
   font-weight: var(--font-weight-semibold);
   color: var(--color-text-strong);
   margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .conversation__last-message {
@@ -36,15 +54,26 @@
   text-overflow: ellipsis;
 }
 
+.conversation__meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+  min-width: 50px;
+}
+
+.conversation__time {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
 .conversation__unread-badge {
   background: var(--color-danger);
   color: var(--color-on-danger);
   font-size: var(--font-size-xs);
   padding: 0 0.4em;
   border-radius: var(--border-radius-sm);
-  margin-left: var(--spacing-xs);
-  align-self: flex-start;
-  margin-top: 2px;
   font-weight: var(--font-weight-semibold);
   display: inline-block;
 }

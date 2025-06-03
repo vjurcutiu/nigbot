@@ -28,10 +28,12 @@ const socket = io(`${API_URL}/inbox`, {
   transports: ['websocket', 'polling'],
 });
 
+
 export default function Inbox() {
   const [activeConv, setActiveConv] = useState(null);
   const [inputText, setInputText] = useState('');
   const [participantMap, setParticipantMap] = useState({});
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   // 1. Conversations list
   const { data: convos = [], error: convError } = useSWR(
@@ -80,7 +82,7 @@ export default function Inbox() {
       // update SWR cache
       mutate(`/api/conversations/${activeConv}/messages?limit=50`, old => {
         return {
-          messages: [...(old?.messages || []), msg],
+          items: [...(old?.items || []), msg],
           nextCursor: old?.nextCursor,
         };
       }, false);
@@ -120,11 +122,11 @@ export default function Inbox() {
     const url = `/api/conversations/${activeConv}/messages`;
     // optimistic update
     const tempId = 'temp-' + Date.now();
-    const optimisticMsg = { id: tempId, sender_id: 'me', body, created_at: new Date().toISOString() };
+    const optimisticMsg = { id: tempId, sender_id: 'me', body, created_at: new Date().toISOString(), conversation_id: activeConv };
     mutate(
       `/api/conversations/${activeConv}/messages?limit=50`,
       old => ({
-        messages: [...(old?.messages || []), optimisticMsg],
+        items: [...(old?.items || []), optimisticMsg],
         nextCursor: old?.nextCursor
       }),
       false
@@ -147,10 +149,11 @@ export default function Inbox() {
         mutate(
           `/api/conversations/${activeConv}/messages?limit=50`,
           old => ({
-            messages: old?.messages.map(m => m.id === tempId ? serverMsg : m) || [],
+            items: old?.items.map(m => m.id === tempId ? serverMsg : m) || [],
             nextCursor: old?.nextCursor
           })
         );
+        // Also update conversations list to reflect new last message and unread count
         mutate('/api/conversations');
       })
       .catch(err => {
@@ -162,15 +165,23 @@ export default function Inbox() {
   const endRef = useRef();
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
+  // 8. Sidebar toggle
+  const toggleSidebar = () => {
+    setSidebarCollapsed(!sidebarCollapsed);
+  };
+
   if (convError) {
     console.error('Error loading conversations:', convError);
     return <div>Error loading conversations: {convError.message || JSON.stringify(convError)}</div>;
   }
 
   return (
-    <div className="inbox">
+    <div className={`inbox${sidebarCollapsed ? ' inbox--sidebar-collapsed' : ''}`}>
       {/* Sidebar */}
       <div className="inbox__sidebar">
+        <button className="inbox__sidebar-toggle" onClick={toggleSidebar} aria-label="Toggle sidebar">
+          {sidebarCollapsed ? '▶' : '◀'}
+        </button>
         {convos.map(conv => (
           <Conversation
             key={conv.id}
@@ -183,28 +194,36 @@ export default function Inbox() {
 
       {/* Thread view */}
       <div className="inbox__chat">
+        <div className="inbox__chat-header">
+          {activeConv ? `Conversation ${activeConv}` : 'Select a conversation'}
+        </div>
         <div className="inbox__messages">
-          {msgError && <div>Error loading messages</div>}
-          {messages.length === 0 && !msgError && activeConv && (
-            <div className="text-center text-gray-500 mt-10">No messages in this conversation yet.</div>
-          )}
-          {messages.map(msg => (
-            <MessageWithSender key={msg.id} msg={msg} />
-          ))}
-        </div>
-        <div ref={endRef} />
-        {hasNextPage && <button onClick={() => setSize(size + 1)} className="inbox__send-btn" style={{ width: '100%' }}>Load more</button>}
-        <div className="inbox__input-row">
-          <input
-            type="text"
-            className="inbox__input"
-            placeholder="Type a message..."
-            value={inputText}
-            onChange={e => setInputText(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && sendMessage()}
-          />
-          <button onClick={sendMessage} className="inbox__send-btn">Send</button>
-        </div>
+        {msgError && <div>Error loading messages</div>}
+        {messages.length === 0 && !msgError && activeConv && (
+          <div className="text-center text-gray-500 mt-10">No messages in this conversation yet.</div>
+        )}
+        {messages.map(msg => (
+          <MessageWithSender key={msg.id} msg={msg} participantMap={participantMap} />
+        ))}
+      </div>
+      <div ref={endRef} />
+      {hasNextPage && <button onClick={() => setSize(size + 1)} className="inbox__send-btn" style={{ width: '100%' }}>Load more</button>}
+      <div className="inbox__input-row">
+        <textarea
+          className="inbox__input inbox__input--textarea"
+          placeholder="Type a message..."
+          value={inputText}
+          onChange={e => setInputText(e.target.value)}
+          onKeyDown={e => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              sendMessage();
+            }
+          }}
+          rows={2}
+        />
+        <button onClick={sendMessage} className="inbox__send-btn">Send</button>
+      </div>
       </div>
     </div>
   );

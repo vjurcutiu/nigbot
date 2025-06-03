@@ -1,0 +1,54 @@
+Style Guide for AI Prompts and CSS Conventions
+
+1. CSS Variables (Custom Properties)
+- Define all colors, fonts, spacing, and other design tokens in a central CSS variables file (e.g., src/styles/variables.css).
+- Use descriptive variable names with a consistent prefix, e.g., --color-primary, --spacing-base.
+- Use variables throughout all CSS files for consistency and easy theming.
+
+2. File Organization
+- Create dedicated CSS files for each React component or feature (e.g., AuthEntry.css, LoginForm.css, CandidatePortal.css).
+- Import the CSS file directly in the corresponding component file.
+- Keep global styles and resets in index.css or a global CSS file.
+
+3. Layout and Structure
+- Use a Layout component to wrap pages, including header, footer, and main content.
+- Add padding or margin in the layout styles to account for fixed headers or footers.
+- Use flexbox or grid for layout structures, with clear gap and alignment settings.
+
+4. Naming Conventions
+- Use BEM-like or descriptive class names scoped to the component, e.g., .auth-entry-container, .candidate-portal-button.
+- Avoid generic class names to prevent style conflicts.
+
+5. Responsive Design
+- Use relative units (rem, em, %) and CSS variables for spacing and sizing.
+- Use media queries in global styles for color scheme adjustments (light/dark mode).
+- Ensure components handle overflow gracefully with max-width, min-width, and overflow properties.
+
+6. Styling Buttons and Interactive Elements
+- Use consistent padding, border-radius, font-weight, and colors for buttons.
+- Provide hover and focus states using CSS variables for colors.
+- Use cursor: pointer and smooth transitions for better UX.
+
+7. Text and Typography
+- Use system fonts or defined font stacks via CSS variables.
+- Use consistent font sizes and weights for headings, paragraphs, and labels.
+- Handle text overflow with word-wrap, white-space, and text-overflow properties as needed.
+
+8. Accessibility and Usability
+- Ensure focus styles are visible and consistent.
+- Use semantic HTML elements (button, nav, header, main).
+- Provide sufficient color contrast using defined color variables.
+
+9. Prompting AI for Style Changes
+- Specify the component or file to modify.
+- Describe the desired style change clearly (e.g., "make buttons have rounded corners with 8px radius").
+- Reference existing variables or styles to maintain consistency.
+- Request modular and maintainable changes scoped to components.
+
+10. General Best Practices
+- Keep CSS modular and scoped to components.
+- Avoid inline styles; prefer CSS or CSS-in-JS with variables.
+- Use comments in CSS files to separate sections and explain complex styles.
+- Test styles in different screen sizes and color schemes.
+
+This guide should help maintain a consistent, scalable, and maintainable styling approach across the project and facilitate clear AI prompt instructions for future style modifications.

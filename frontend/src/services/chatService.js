@@ -16,6 +16,7 @@ class ChatService {
     if (this.userCache.has(userId)) {
       return this.userCache.get(userId);
     }
+    // Fallback to fetch individual user if needed
     try {
       const res = await api.get(`/users/${userId}`);
       this.userCache.set(userId, res.data);
@@ -24,6 +25,30 @@ class ChatService {
       console.error('Failed to fetch user:', err);
       return null;
     }
+  }
+
+  async getParticipants(conversationId) {
+    if (this.participantCache && this.participantCache[conversationId]) {
+      return this.participantCache[conversationId];
+    }
+    try {
+      const res = await api.get(`/conversations/${conversationId}/participants`);
+      if (!this.participantCache) this.participantCache = {};
+      this.participantCache[conversationId] = res.data.reduce((map, p) => {
+        map[p.user_id] = p.display_name;
+        return map;
+      }, {});
+      return this.participantCache[conversationId];
+    } catch (err) {
+      console.error('Failed to fetch conversation participants:', err);
+      return {};
+    }
+  }
+
+  getDisplayNameFromMap(userId, participantMap) {
+    if (!participantMap) return 'Unknown';
+    if (userId === this.currentUserId) return 'You';
+    return participantMap[userId] || 'Unknown';
   }
 
   getDisplayName(user) {

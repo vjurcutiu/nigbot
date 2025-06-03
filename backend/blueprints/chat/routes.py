@@ -46,6 +46,25 @@ from flask_login import current_user, login_required
 from flask_socketio import disconnect, emit, join_room, leave_room
 
 from db.models import Conversation, Message, Participant, User, db
+
+from flask_login import login_required, current_user
+from flask import abort
+from flask import Blueprint, jsonify, request
+
+chat_bp = Blueprint("chat", __name__, url_prefix="/api")
+
+@chat_bp.route("/users/<int:user_id>", methods=["GET"])
+@login_required
+def get_user(user_id):
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+    return jsonify({
+        "id": user.id,
+        "name": user.name,
+        "username": user.username,
+        # Do not expose email for privacy
+    }), 200
 from extensions import socketio
 
 #: Namespace for all inbox‑related realtime events
@@ -139,6 +158,44 @@ def list_conversations() -> Tuple[Any, int]:
     ).all()
     conversations = [conversation_to_dict(p.conversation) for p in parts]
     return jsonify(conversations), 200
+
+@inbox_bp.route("/conversations/<int:conv_id>/participants", methods=["GET"])
+@login_required
+def get_conversation_participants(conv_id: int):
+    conv, _ = get_conversation_or_404(conv_id)
+    participants = Participant.query.filter_by(conversation_id=conv.id).all()
+    result = []
+    for p in participants:
+        user = User.query.get(p.user_id)
+        if not user:
+            continue
+        # Determine display name: check if user is a company or candidate
+        company = None
+        candidate = None
+        try:
+            from db.company_models import Company
+            company = Company.query.filter_by(user_id=user.id).first()
+        except ImportError:
+            company = None
+        try:
+            from db.candidate_models import CandidateProfile
+            candidate = CandidateProfile.query.filter_by(user_id=user.id).first()
+        except ImportError:
+            candidate = None
+
+        display_name = None
+        if company:
+            display_name = company.name
+        elif candidate:
+            display_name = candidate.full_name
+        else:
+            display_name = user.username or "Unknown"
+
+        result.append({
+            "user_id": user.id,
+            "display_name": display_name,
+        })
+    return jsonify(result), 200
 
 
 @inbox_bp.route("/conversations/<int:conv_id>/messages", methods=["GET"])

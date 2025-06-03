@@ -6,17 +6,18 @@ export default function MessageWithSender({ msg }) {
 
   React.useEffect(() => {
     let isMounted = true;
-    async function fetchUser() {
-      const user = await chatService.getUser(msg.sender_id);
+    async function fetchParticipants() {
+      const participants = await chatService.getParticipants(msg.conversation_id);
       if (isMounted) {
-        setSenderName(chatService.getDisplayName(user));
+        const displayName = chatService.getDisplayNameFromMap(msg.sender_id, participants);
+        setSenderName(displayName);
       }
     }
-    fetchUser();
+    fetchParticipants();
     return () => {
       isMounted = false;
     };
-  }, [msg.sender_id]);
+  }, [msg.sender_id, msg.conversation_id]);
 
   return (
     <div

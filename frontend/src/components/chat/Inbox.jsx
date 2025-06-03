@@ -4,6 +4,7 @@ import useSWRInfinite from 'swr/infinite';
 import { io } from 'socket.io-client';
 import Conversation from './Conversation';
 import MessageWithSender from './MessageWithSender';
+import chatService from '../../services/chatService';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
   const fetcher = async url => {
@@ -29,6 +30,7 @@ const socket = io(`${API_URL}/inbox`, {
 export default function Inbox() {
   const [activeConv, setActiveConv] = useState(null);
   const [inputText, setInputText] = useState('');
+  const [participantMap, setParticipantMap] = useState({});
 
   // 1. Conversations list
   const { data: convos = [], error: convError } = useSWR(
@@ -55,7 +57,20 @@ export default function Inbox() {
   const messages = pages ? pages.flatMap(p => p.items) : [];
   const hasNextPage = pages && pages[pages.length - 1].nextCursor;
 
-  // 3. Real-time updates
+  // 3. Fetch participants when activeConv changes
+  useEffect(() => {
+    if (!activeConv) {
+      setParticipantMap({});
+      return;
+    }
+    async function fetchParticipants() {
+      const participants = await chatService.getParticipants(activeConv);
+      setParticipantMap(participants);
+    }
+    fetchParticipants();
+  }, [activeConv]);
+
+  // 4. Real-time updates
   useEffect(() => {
     if (!activeConv) return;
     socket.emit('join', { conversation_id: activeConv });
@@ -77,7 +92,7 @@ export default function Inbox() {
     };
   }, [activeConv]);
 
-  // 4. Mark read on conv change
+  // 5. Mark read on conv change
   useEffect(() => {
     if (activeConv) {
       console.log('Marking conversation as read:', activeConv);
@@ -96,7 +111,7 @@ export default function Inbox() {
     }
   }, [activeConv]);
 
-  // 5. Send message
+  // 6. Send message
   const sendMessage = () => {
     if (!inputText.trim() || !activeConv) return;
     const body = inputText.trim();
@@ -142,7 +157,7 @@ export default function Inbox() {
       });
   };
 
-  // 6. Scroll to bottom
+  // 7. Scroll to bottom
   const endRef = useRef();
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
@@ -194,4 +209,3 @@ export default function Inbox() {
     </div>
   );
 }
-

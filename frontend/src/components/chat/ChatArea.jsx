@@ -26,7 +26,7 @@ export default function ChatArea({
   return (
     <div className="inbox__chat">
       <div className="inbox__chat-header">Conversation {activeConv}</div>
-      <div className="inbox__messages">
+      <div className="inbox__messages" ref={endRef}>
         {msgError && <div>Error loading messages</div>}
         {messages.length === 0 && !msgError && (
           <div className="text-center text-gray-500 mt-10">No messages in this conversation yet.</div>
@@ -35,7 +35,6 @@ export default function ChatArea({
           <MessageWithSender key={msg.id} msg={msg} participantMap={participantMap} />
         ))}
       </div>
-      <div ref={endRef} />
       {hasNextPage && (
         <button
           onClick={() => setSize(size + 1)}

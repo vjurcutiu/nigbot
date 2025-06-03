@@ -151,6 +151,7 @@ export default function Inbox() {
       },
       false
     );
+    scrollToBottom();
     // POST
     fetch(url, {
       method: 'POST',
@@ -194,14 +195,18 @@ export default function Inbox() {
 
   // 7. Scroll to bottom
   const endRef = useRef();
-  useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
-  // Scroll to bottom when a new message is sent (inputText cleared)
   useEffect(() => {
-    if (inputText === '') {
-      endRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (endRef.current) {
+      endRef.current.scrollTop = endRef.current.scrollHeight;
     }
-  }, [inputText]);
+  }, [messages]);
+
+  const scrollToBottom = () => {
+    if (endRef.current) {
+      endRef.current.scrollTop = endRef.current.scrollHeight;
+    }
+  };
 
   // 8. Sidebar toggle
   const toggleSidebar = () => {

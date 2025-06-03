@@ -65,7 +65,8 @@ export default function Inbox() {
   // Sync localMessages with SWRInfinite pages
   useEffect(() => {
     if (pages) {
-      setLocalMessages(pages.flatMap(p => p.items));
+      const allMessages = pages.flatMap(p => p.items);
+      setLocalMessages(allMessages.slice().reverse());
     } else {
       setLocalMessages([]);
     }

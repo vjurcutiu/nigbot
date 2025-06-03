@@ -196,6 +196,13 @@ export default function Inbox() {
   const endRef = useRef();
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
+  // Scroll to bottom when a new message is sent (inputText cleared)
+  useEffect(() => {
+    if (inputText === '') {
+      endRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [inputText]);
+
   // 8. Sidebar toggle
   const toggleSidebar = () => {
     setSidebarCollapsed(!sidebarCollapsed);
@@ -214,12 +221,20 @@ export default function Inbox() {
           {sidebarCollapsed ? '▶' : '◀'}
         </button>
         {convos.map(conv => (
-          <Conversation
+          <div
             key={conv.id}
-            conversation={conv}
-            isActive={activeConv === conv.id}
-            onSelect={setActiveConv}
-          />
+            className={`inbox__sidebar-item${activeConv === conv.id ? ' inbox__sidebar-item--active' : ''}`}
+            onClick={() => setActiveConv(conv.id)}
+            role="button"
+            tabIndex={0}
+            onKeyPress={e => { if (e.key === 'Enter') setActiveConv(conv.id); }}
+          >
+            <Conversation
+              conversation={conv}
+              isActive={activeConv === conv.id}
+              onSelect={setActiveConv}
+            />
+          </div>
         ))}
       </div>
 

@@ -2,7 +2,7 @@
 
 .inbox {
   display: flex;
-  height: 80vh;
+  height: 75vh;
   background: var(--color-background);
   box-sizing: border-box;
   transition: all 0.3s ease;
@@ -32,6 +32,7 @@
   height: 100%;
   display: flex;
   flex-direction: column;
+  margin-right: var(--spacing-base);
 }
 
 .inbox__sidebar-toggle {
@@ -57,11 +58,12 @@
   height: 100%;
   background: var(--color-background);
   position: relative;
+  padding-left: var(--spacing-base);
 }
 
 .inbox__chat-header {
   padding: var(--spacing-md);
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: none;
   font-weight: var(--font-weight-semibold);
   font-size: var(--font-size-lg);
   color: var(--color-text-strong);
@@ -87,7 +89,7 @@
   right: 0;
   width: 75%;
   box-sizing: border-box;
-  z-index: 10;
+  z-index: 9999;
 }
 
 .inbox__input {
@@ -117,13 +119,113 @@
   background: var(--color-primary-dark);
 }
 
+/* Additional styles for chat component margins, hovers, rounded corners, and text styles */
+
+/* Margin around inbox component */
+.inbox {
+  margin: var(--spacing-base);
+  border-radius: var(--border-radius);
+}
+
+/* Hover effect for inbox sidebar items */
+.inbox__sidebar-item {
+  padding: var(--spacing-base);
+  border-radius: var(--border-radius-lg);
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.15s ease;
+  user-select: none;
+  margin-bottom: calc(var(--spacing-base) * 2);
+  background-color: var(--color-surface);
+}
+
+.inbox__sidebar-item:hover,
+.inbox__sidebar-item:focus {
+  background-color: var(--color-primary-light);
+  outline: none;
+  transform: translateX(2px);
+  box-shadow: 0 1px 4px rgba(100, 108, 255, 0.4);
+  cursor: pointer;
+  color: var(--color-on-primary);
+}
+
+/* Selected sidebar item */
+.inbox__sidebar-item.selected {
+  background-color: var(--color-primary);
+  color: var(--color-text);
+  font-weight: 600;
+  box-shadow: 0 0 8px var(--color-primary);
+  transform: translateX(0);
+}
+
+/* Text styles for sidebar item */
+.inbox__sidebar-item .sender-name {
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.3s ease;
+}
+
+.inbox__sidebar-item.selected .sender-name {
+  color: var(--color-text);
+}
+
+/* Last message preview text */
+.inbox__sidebar-item .last-message {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.7);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.3s ease;
+}
+
+.inbox__sidebar-item.selected .last-message {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* Rounded corners for avatars in sidebar */
+.inbox__sidebar-item .avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: var(--spacing-base);
+  object-fit: cover;
+  border: 2px solid var(--color-primary);
+  transition: border-color 0.3s ease, box-shadow 0.2s ease;
+}
+
+.inbox__sidebar-item:hover .avatar {
+  border-color: var(--color-primary-hover);
+  box-shadow: 0 0 6px var(--color-primary-hover);
+}
+
+/* Scrollbar styling for sidebar */
+.inbox__sidebar::-webkit-scrollbar {
+  width: 10px;
+}
+
+.inbox__sidebar::-webkit-scrollbar-track {
+  background: var(--color-surface);
+  border-radius: var(--border-radius-xl);
+}
+
+.inbox__sidebar::-webkit-scrollbar-thumb {
+  background-color: var(--color-primary-light);
+  border-radius: var(--border-radius-xl);
+  border: 3px solid var(--color-surface);
+}
+
+/* Responsive adjustments */
 @media (max-width: 900px) {
   .inbox__sidebar {
-    min-width: 120px;
-    max-width: 200px;
-    padding: var(--spacing-xs);
+    min-width: 140px;
+    max-width: 220px;
+    padding: var(--spacing-sm);
   }
   .inbox__chat {
-    padding: var(--spacing-xs);
+    padding: var(--spacing-sm);
   }
 }

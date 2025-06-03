@@ -8,6 +8,14 @@ export default function Conversation({ conversation, isActive, onSelect }) {
     }
   };
 
+  if (!conversation) {
+    return (
+      <div className="p-4 text-center text-gray-500">
+        Select a conversation to view messages
+      </div>
+    );
+  }
+
   return (
     <div
       role="button"

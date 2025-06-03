@@ -168,6 +168,9 @@ export default function Inbox() {
       <div className="flex-1 flex flex-col">
         <div className="flex-1 overflow-y-auto p-4">
           {msgError && <div>Error loading messages</div>}
+          {messages.length === 0 && !msgError && activeConv && (
+            <div className="text-center text-gray-500 mt-10">No messages in this conversation yet.</div>
+          )}
           {messages.map(msg => (
             <div
               key={msg.id}

@@ -54,6 +54,9 @@ SOCKET_NAMESPACE = "/inbox"
 logger = logging.getLogger(__name__)
 inbox_bp = Blueprint("inbox", __name__, url_prefix="/api")
 
+# Add logging to mark_read route
+# Remove duplicate mark_read route to avoid endpoint overwrite error
+
 
 # --------------------------------------------------------------------------- #
 # Helpers                                                                     #

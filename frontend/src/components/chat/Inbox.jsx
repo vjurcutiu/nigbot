@@ -3,6 +3,7 @@ import useSWR, { mutate } from 'swr';
 import useSWRInfinite from 'swr/infinite';
 import { io } from 'socket.io-client';
 import Conversation from './Conversation';
+import MessageWithSender from './MessageWithSender';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
   const fetcher = async url => {
@@ -172,29 +173,25 @@ export default function Inbox() {
             <div className="text-center text-gray-500 mt-10">No messages in this conversation yet.</div>
           )}
           {messages.map(msg => (
-            <div
-              key={msg.id}
-              className={`mb-2 max-w-xs p-2 rounded-lg ${msg.sender_id === 'me' ? 'bg-blue-100 self-end' : 'bg-gray-100 self-start'}`}>
-              <div>{msg.body}</div>
-              <div className="text-xs text-gray-500">{new Date(msg.created_at).toLocaleTimeString()}</div>
-            </div>
+            <MessageWithSender key={msg.id} msg={msg} />
           ))}
-          <div ref={endRef} />
-          {hasNextPage && <button onClick={() => setSize(size + 1)} className="w-full p-2">Load more</button>}
+
         </div>
-        <div className="p-2 border-t flex">
-          <input
-            type="text"
-            className="flex-1 p-2 border rounded"
-            placeholder="Type a message..."
-            value={inputText}
-            onChange={e => setInputText(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && sendMessage()}
-          />
-          <button onClick={sendMessage} className="ml-2 p-2 bg-blue-500 text-white rounded">Send</button>
-        </div>
+        <div ref={endRef} />
+        {hasNextPage && <button onClick={() => setSize(size + 1)} className="w-full p-2">Load more</button>}
+      </div>
+      <div className="p-2 border-t flex">
+        <input
+          type="text"
+          className="flex-1 p-2 border rounded"
+          placeholder="Type a message..."
+          value={inputText}
+          onChange={e => setInputText(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && sendMessage()}
+        />
+        <button onClick={sendMessage} className="ml-2 p-2 bg-blue-500 text-white rounded">Send</button>
       </div>
     </div>
   );
 }
-0
+

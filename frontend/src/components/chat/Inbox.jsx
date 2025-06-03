@@ -5,6 +5,7 @@ import { io } from 'socket.io-client';
 import Conversation from './Conversation';
 import MessageWithSender from './MessageWithSender';
 import chatService from '../../services/chatService';
+import ChatArea from './ChatArea';
 import './Inbox.css';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
@@ -57,7 +58,18 @@ export default function Inbox() {
     error: msgError,
   } = useSWRInfinite(getKey, fetcher);
 
-  const messages = pages ? pages.flatMap(p => p.items) : [];
+  // Local state to force re-render on message updates
+  const [localMessages, setLocalMessages] = useState([]);
+  const messages = localMessages;
+
+  // Sync localMessages with SWRInfinite pages
+  useEffect(() => {
+    if (pages) {
+      setLocalMessages(pages.flatMap(p => p.items));
+    } else {
+      setLocalMessages([]);
+    }
+  }, [pages]);
   const hasNextPage = pages && pages[pages.length - 1].nextCursor;
 
   // 3. Fetch participants when activeConv changes
@@ -79,13 +91,8 @@ export default function Inbox() {
     socket.emit('join', { conversation_id: activeConv });
     socket.on('new_message', msg => {
       if (msg.conversation_id !== activeConv) return;
-      // update SWR cache
-      mutate(`/api/conversations/${activeConv}/messages?limit=50`, old => {
-        return {
-          items: [...(old?.items || []), msg],
-          nextCursor: old?.nextCursor,
-        };
-      }, false);
+      // force revalidation to refetch messages from server
+      mutate(`/api/conversations/${activeConv}/messages?limit=50`, undefined, true);
       // refresh conversations list
       mutate('/api/conversations');
     });
@@ -123,12 +130,24 @@ export default function Inbox() {
     // optimistic update
     const tempId = 'temp-' + Date.now();
     const optimisticMsg = { id: tempId, sender_id: 'me', body, created_at: new Date().toISOString(), conversation_id: activeConv };
+    // Optimistically update localMessages
+    setLocalMessages(prev => [...prev, optimisticMsg]);
     mutate(
       `/api/conversations/${activeConv}/messages?limit=50`,
-      old => ({
-        items: [...(old?.items || []), optimisticMsg],
-        nextCursor: old?.nextCursor
-      }),
+      oldPages => {
+        if (!oldPages) {
+          // If no pages exist yet, create the first page with the optimistic message
+          return [{ items: [optimisticMsg], nextCursor: null }];
+        }
+        // Add the optimistic message to the last of the first page's items array
+        return [
+          {
+            ...oldPages[0],
+            items: [...(oldPages[0]?.items || []), optimisticMsg],
+          },
+          ...oldPages.slice(1),
+        ];
+      },
       false
     );
     // POST
@@ -146,12 +165,23 @@ export default function Inbox() {
       })
       .then(serverMsg => {
         // replace temp message
+        // Replace temp message in localMessages with serverMsg
+        setLocalMessages(prev =>
+          prev.map(m => m.id === tempId ? serverMsg : m)
+        );
         mutate(
           `/api/conversations/${activeConv}/messages?limit=50`,
-          old => ({
-            items: old?.items.map(m => m.id === tempId ? serverMsg : m) || [],
-            nextCursor: old?.nextCursor
-          })
+          oldPages => {
+            if (!oldPages) return oldPages;
+            // Replace temp message with serverMsg in the first page only
+            return [
+              {
+                ...oldPages[0],
+                items: oldPages[0].items.map(m => m.id === tempId ? serverMsg : m),
+              },
+              ...oldPages.slice(1),
+            ];
+          }
         );
         // Also update conversations list to reflect new last message and unread count
         mutate('/api/conversations');
@@ -193,38 +223,20 @@ export default function Inbox() {
       </div>
 
       {/* Thread view */}
-      <div className="inbox__chat">
-        <div className="inbox__chat-header">
-          {activeConv ? `Conversation ${activeConv}` : 'Select a conversation'}
-        </div>
-        <div className="inbox__messages">
-        {msgError && <div>Error loading messages</div>}
-        {messages.length === 0 && !msgError && activeConv && (
-          <div className="text-center text-gray-500 mt-10">No messages in this conversation yet.</div>
-        )}
-        {messages.map(msg => (
-          <MessageWithSender key={msg.id} msg={msg} participantMap={participantMap} />
-        ))}
-      </div>
-      <div ref={endRef} />
-      {hasNextPage && <button onClick={() => setSize(size + 1)} className="inbox__send-btn" style={{ width: '100%' }}>Load more</button>}
-      <div className="inbox__input-row">
-        <textarea
-          className="inbox__input inbox__input--textarea"
-          placeholder="Type a message..."
-          value={inputText}
-          onChange={e => setInputText(e.target.value)}
-          onKeyDown={e => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-              e.preventDefault();
-              sendMessage();
-            }
-          }}
-          rows={2}
-        />
-        <button onClick={sendMessage} className="inbox__send-btn">Send</button>
-      </div>
-      </div>
+      <ChatArea
+        key={activeConv}
+        activeConv={activeConv}
+        messages={messages}
+        participantMap={participantMap}
+        msgError={msgError}
+        hasNextPage={hasNextPage}
+        setSize={setSize}
+        size={size}
+        inputText={inputText}
+        setInputText={setInputText}
+        sendMessage={sendMessage}
+        endRef={endRef}
+      />
     </div>
   );
 }

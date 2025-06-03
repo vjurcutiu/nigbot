@@ -12,6 +12,7 @@ import './CandidatePortal.css';
 export default function CandidatePortal({ editable = true }) {
   const { userId: paramUserId, candidateId: paramCandidateId } = useParams();
   const { user } = useContext(UserContext);
+  console.log("CandidatePortal: user from context =", user);
   const [isHiring, setIsHiring] = useState(false);
   const [hireError, setHireError] = useState(null);
   const [hireSuccess, setHireSuccess] = useState(null);
@@ -20,6 +21,10 @@ export default function CandidatePortal({ editable = true }) {
 
   if (!profileId) {
     return <div>Loading profile...</div>;
+  }
+
+  if (user.loading) {
+    return <div>Loading user data...</div>;
   }
 
   const loadOverview = useCallback(() => {
@@ -63,6 +68,9 @@ export default function CandidatePortal({ editable = true }) {
     value: typeof value === 'object' ? JSON.stringify(value) : value,
   }));
 
+  // Prevent editable from being true until user loading is false and ownership is confirmed
+  const effectiveEditable = !user.loading && isOwner && editable;
+
   const handleSave = async (diff) => {
     try {
       await candidateService.updateFull(profileId, diff);
@@ -101,11 +109,12 @@ export default function CandidatePortal({ editable = true }) {
       )}
 
       <EditableProfileCard
+        key={profileId + '-' + (isOwner ? 'owner' : 'notowner')}
         title="Profile"
         fields={profileFields}
         initialData={profile}
         onSave={handleSave}
-        editable={isOwner && editable}
+        editable={!user.loading && isOwner && editable}
       />
 
       <EntityList

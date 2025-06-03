@@ -24,6 +24,7 @@ export default function EditableProfileCard({
   onSave,
   editable = true,
 }) {
+  console.log("EditableProfileCard: editable prop =", editable);
   const [editing, setEditing] = useState(false);
   const [values, setValues] = useState(initialData);
   const [saving, setSaving] = useState(false);

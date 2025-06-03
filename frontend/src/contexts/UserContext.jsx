@@ -18,9 +18,11 @@ export const UserProvider = ({ children }) => {
       if (role === 'candidate') {
         const candidateResponse = await api.get('/candidate/profile');
         candidateId = candidateResponse.data.profile?.id || null;
+        console.log("UserContext: fetched candidateId =", candidateId);
       } else if (role === 'client') {
         const companyResponse = await api.get('/client/');
         company = companyResponse.data.company || null;
+        console.log("UserContext: fetched company =", company);
       }
 
       setUser({
@@ -31,7 +33,9 @@ export const UserProvider = ({ children }) => {
         company,
         loading: false,
       });
+      console.log("UserContext: user state set to", { userId, candidateId, role, username, company });
     } catch (error) {
+      console.error("UserContext: fetchUser error", error);
       setUser({ userId: null, candidateId: null, role: null, username: null, company: null, loading: false });
     }
   }, []);
@@ -40,8 +44,9 @@ export const UserProvider = ({ children }) => {
     fetchUser();
   }, [fetchUser]);
 
-  const login = (userData) => {
-    setUser({ ...userData, loading: false });
+  const login = async (userData) => {
+    setUser((prev) => ({ ...prev, loading: true }));
+    await fetchUser();
   };
 
   const logout = async () => {

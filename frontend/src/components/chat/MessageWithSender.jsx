@@ -1,5 +1,6 @@
 import React from 'react';
 import chatService from '../../services/chatService';
+import './MessageWithSender.css';
 
 export default function MessageWithSender({ msg }) {
   const [senderName, setSenderName] = React.useState(null);
@@ -19,12 +20,14 @@ export default function MessageWithSender({ msg }) {
     };
   }, [msg.sender_id, msg.conversation_id]);
 
+  const isSent = msg.sender_id === chatService.currentUserId;
+
   return (
     <div
-      className={`mb-2 max-w-xs p-2 rounded-lg ${msg.sender_id === chatService.currentUserId ? 'bg-blue-100 self-end' : 'bg-gray-100 self-start'}`}>
-      <div className="font-semibold">{senderName || 'Loading...'}</div>
-      <div>{msg.body}</div>
-      <div className="text-xs text-gray-500">{new Date(msg.created_at).toLocaleTimeString()}</div>
+      className={`message-with-sender ${isSent ? 'message-with-sender--sent' : 'message-with-sender--received'}`}>
+      <div className="message-with-sender__sender">{senderName || 'Loading...'}</div>
+      <div className="message-with-sender__body">{msg.body}</div>
+      <div className="message-with-sender__timestamp">{new Date(msg.created_at).toLocaleTimeString()}</div>
     </div>
   );
 }

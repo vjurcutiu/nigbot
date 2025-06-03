@@ -5,6 +5,7 @@ import { io } from 'socket.io-client';
 import Conversation from './Conversation';
 import MessageWithSender from './MessageWithSender';
 import chatService from '../../services/chatService';
+import './Inbox.css';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
   const fetcher = async url => {
@@ -167,9 +168,9 @@ export default function Inbox() {
   }
 
   return (
-    <div className="flex h-full">
+    <div className="inbox">
       {/* Sidebar */}
-      <div className="w-1/4 border-r p-2 overflow-y-auto">
+      <div className="inbox__sidebar">
         {convos.map(conv => (
           <Conversation
             key={conv.id}
@@ -181,8 +182,8 @@ export default function Inbox() {
       </div>
 
       {/* Thread view */}
-      <div className="flex-1 flex flex-col">
-        <div className="flex-1 overflow-y-auto p-4">
+      <div className="inbox__chat">
+        <div className="inbox__messages">
           {msgError && <div>Error loading messages</div>}
           {messages.length === 0 && !msgError && activeConv && (
             <div className="text-center text-gray-500 mt-10">No messages in this conversation yet.</div>
@@ -190,21 +191,20 @@ export default function Inbox() {
           {messages.map(msg => (
             <MessageWithSender key={msg.id} msg={msg} />
           ))}
-
         </div>
         <div ref={endRef} />
-        {hasNextPage && <button onClick={() => setSize(size + 1)} className="w-full p-2">Load more</button>}
-      </div>
-      <div className="p-2 border-t flex">
-        <input
-          type="text"
-          className="flex-1 p-2 border rounded"
-          placeholder="Type a message..."
-          value={inputText}
-          onChange={e => setInputText(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && sendMessage()}
-        />
-        <button onClick={sendMessage} className="ml-2 p-2 bg-blue-500 text-white rounded">Send</button>
+        {hasNextPage && <button onClick={() => setSize(size + 1)} className="inbox__send-btn" style={{ width: '100%' }}>Load more</button>}
+        <div className="inbox__input-row">
+          <input
+            type="text"
+            className="inbox__input"
+            placeholder="Type a message..."
+            value={inputText}
+            onChange={e => setInputText(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && sendMessage()}
+          />
+          <button onClick={sendMessage} className="inbox__send-btn">Send</button>
+        </div>
       </div>
     </div>
   );

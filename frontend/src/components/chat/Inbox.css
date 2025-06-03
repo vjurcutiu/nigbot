@@ -1,0 +1,88 @@
+@import '../../styles/variables.css';
+
+.inbox {
+  display: flex;
+  height: 100%;
+  background: var(--color-background);
+  box-sizing: border-box;
+}
+
+.inbox__sidebar {
+  width: 25%;
+  min-width: 220px;
+  max-width: 350px;
+  border-right: 1px solid var(--color-border);
+  padding: var(--spacing-sm);
+  overflow-y: auto;
+  background: var(--color-surface);
+  box-sizing: border-box;
+  height: 100%;
+}
+
+.inbox__chat {
+  width: 75%;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--color-background);
+  position: relative;
+}
+
+.inbox__messages {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: var(--spacing-md);
+  padding-bottom: 60px; /* space for input row */
+}
+
+.inbox__input-row {
+  display: flex;
+  align-items: center;
+  padding: var(--spacing-sm);
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface);
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  width: 75%;
+  box-sizing: border-box;
+  z-index: 10;
+}
+
+.inbox__input {
+  flex: 1;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  font-size: var(--font-size-base);
+  background: var(--color-input-bg);
+  color: var(--color-text);
+}
+
+.inbox__send-btn {
+  margin-left: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-md);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  border: none;
+  border-radius: var(--border-radius-md);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.inbox__send-btn:hover,
+.inbox__send-btn:focus {
+  background: var(--color-primary-dark);
+}
+
+@media (max-width: 900px) {
+  .inbox__sidebar {
+    min-width: 120px;
+    max-width: 200px;
+    padding: var(--spacing-xs);
+  }
+  .inbox__chat {
+    padding: var(--spacing-xs);
+  }
+}

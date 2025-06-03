@@ -1,0 +1,50 @@
+@import '../../styles/variables.css';
+
+.conversation {
+  padding: var(--spacing-sm);
+  cursor: pointer;
+  border-radius: var(--border-radius-md);
+  transition: background 0.15s;
+  margin-bottom: var(--spacing-xs);
+  background: transparent;
+  outline: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xxs);
+}
+
+.conversation:hover,
+.conversation:focus {
+  background: var(--color-hover);
+}
+
+.conversation--active {
+  background: var(--color-selected);
+}
+
+.conversation__title {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-strong);
+  margin-bottom: 2px;
+}
+
+.conversation__last-message {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.conversation__unread-badge {
+  background: var(--color-danger);
+  color: var(--color-on-danger);
+  font-size: var(--font-size-xs);
+  padding: 0 0.4em;
+  border-radius: var(--border-radius-sm);
+  margin-left: var(--spacing-xs);
+  align-self: flex-start;
+  margin-top: 2px;
+  font-weight: var(--font-weight-semibold);
+  display: inline-block;
+}

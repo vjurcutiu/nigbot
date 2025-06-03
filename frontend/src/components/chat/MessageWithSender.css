@@ -17,20 +17,30 @@
   align-self: flex-end;
   background: var(--color-bubble-bg-sent);
   text-align: right;
+  margin-left: auto;
+  min-width: 25%;
+  max-width: 70%;
+  width: fit-content;
+  max-inline-size: 70%;
+  word-wrap: break-word;
+  border-top-right-radius: 0;
+}
+
+.message-with-sender--received {
+  align-self: flex-start;
+  background: var(--color-bubble-bg-received);
+  min-width: 25%;
+  max-width: 70%;
+  width: fit-content;
+  max-inline-size: 70%;
+  word-wrap: break-word;
+  border-top-left-radius: 0;
 }
 
 .message-with-sender--sent::after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  right: -10px;
-  width: 0;
-  height: 0;
-  border-top: 10px solid var(--color-bubble-tail-sent);
-  border-left: 10px solid transparent;
-  border-right: 0 solid transparent;
-  border-bottom: 0 solid transparent;
+  display: none;
 }
+
 
 .message-with-sender--received {
   align-self: flex-start;
@@ -38,16 +48,7 @@
 }
 
 .message-with-sender--received::after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: -10px;
-  width: 0;
-  height: 0;
-  border-top: 10px solid var(--color-bubble-tail-received);
-  border-right: 10px solid transparent;
-  border-left: 0 solid transparent;
-  border-bottom: 0 solid transparent;
+  display: none;
 }
 
 .message-with-sender__sender {

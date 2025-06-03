@@ -1,15 +1,16 @@
-import React from 'react';
+
+import { useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import authService from '../../services/authService';
+import { UserContext } from '../../contexts/UserContext';
 import './Header.css';
 
-export function Header({ userName, userId, role }) {
+export function Header() {
+  const { user, logout } = useContext(UserContext);
   const navigate = useNavigate();
 
   const handleLogout = async () => {
     try {
-      await authService.logout();
-      // Redirect to login page or home after logout
+      await logout();
       navigate('/login');
     } catch (error) {
       console.error('Logout failed:', error);
@@ -18,10 +19,10 @@ export function Header({ userName, userId, role }) {
   };
 
   const getProfileLink = () => {
-    if (role === 'client') {
-      return userId ? `/client/${userId}` : '/client';
-    } else if (role === 'candidate') {
-      return userId ? `/candidate/${userId}` : '/candidate';
+    if (user?.role === 'client') {
+      return user?.userId ? `/client/${user.userId}` : '/client';
+    } else if (user?.role === 'candidate') {
+      return user?.userId ? `/candidate/${user.userId}` : '/candidate';
     } else {
       return '/profile';
     }
@@ -30,7 +31,7 @@ export function Header({ userName, userId, role }) {
   return (
     <header>
       <div>
-        {userName ? `Welcome, ${userName}` : 'Welcome'}
+        {user?.username ? `Welcome, ${user.username}` : 'Welcome'}
       </div>
       <nav>
         <Link to="/chat">

@@ -5,20 +5,19 @@ import { io } from 'socket.io-client';
 import Conversation from './Conversation';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
-const fetcher = async url => {
-  const fullUrl = url.startsWith('http') ? url : `${API_URL}${url}`;
-  const res = await fetch(fullUrl, { 
-    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
-    credentials: 'include'
-  });
-  const text = await res.text();
-  try {
-    return JSON.parse(text);
-  } catch (err) {
-    console.error('Failed to parse JSON response:', text);
-    throw new Error(`Failed to parse JSON response from ${fullUrl}: ${text}`);
-  }
-};
+  const fetcher = async url => {
+    const fullUrl = url.startsWith('http') ? url : `${API_URL}${url}`;
+    const res = await fetch(fullUrl, { 
+      credentials: 'include'
+    });
+    const text = await res.text();
+    try {
+      return JSON.parse(text);
+    } catch (err) {
+      console.error('Failed to parse JSON response:', text);
+      throw new Error(`Failed to parse JSON response from ${fullUrl}: ${text}`);
+    }
+  };
 
 // Initialize socket outside component to avoid reconnects
 const socket = io(`${API_URL}/inbox`, {
@@ -52,7 +51,7 @@ export default function Inbox() {
     error: msgError,
   } = useSWRInfinite(getKey, fetcher);
 
-  const messages = pages ? pages.flatMap(p => p.messages) : [];
+  const messages = pages ? pages.flatMap(p => p.items) : [];
   const hasNextPage = pages && pages[pages.length - 1].nextCursor;
 
   // 3. Real-time updates
@@ -80,10 +79,19 @@ export default function Inbox() {
   // 4. Mark read on conv change
   useEffect(() => {
     if (activeConv) {
-      fetch(`/api/conversations/${activeConv}/read`, {
+      console.log('Marking conversation as read:', activeConv);
+      fetch(`/api/conversations/${activeConv}/mark_read`, {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
-      }).then(() => mutate('/api/conversations'));
+        credentials: 'include',
+      }).then(response => {
+        console.log('Mark read response status:', response.status);
+        return response.text();
+      }).then(text => {
+        console.log('Mark read response text:', text);
+        mutate('/api/conversations');
+      }).catch(error => {
+        console.error('Error marking conversation as read:', error);
+      });
     }
   }, [activeConv]);
 
@@ -109,8 +117,8 @@ export default function Inbox() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
       },
+      credentials: 'include',
       body: JSON.stringify({ body }),
     })
       .then(res => {

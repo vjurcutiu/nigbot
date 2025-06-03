@@ -1,3 +1,7 @@
+
+import eventlet
+eventlet.monkey_patch()
+
 from flask import Flask
 from flask_cors import CORS
 from flask_migrate import Migrate
@@ -38,6 +42,11 @@ CORS(
             "origins": ["http://localhost:5173", "http://localhost:5174"],
             "allow_headers": ["Content-Type", "Authorization"],
             "methods": ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]
+        },
+        r"/socket.io/*": {
+            "origins": ["http://localhost:5173", "http://localhost:5174"],
+            "allow_headers": ["Content-Type", "Authorization"],
+            "methods": ["GET", "POST", "OPTIONS"]
         }
     }
 )
@@ -58,6 +67,11 @@ app.register_blueprint(addon_bp )
 app.register_blueprint(hire_bp)
 
 chat_init_app(app)
+
+@app.errorhandler(Exception)
+def handle_exception(e):
+    app.logger.error(f"Unhandled Exception: {e}", exc_info=True)
+    return "Internal Server Error", 500
 
 if __name__ == '__main__':
     # no more db.create_all()

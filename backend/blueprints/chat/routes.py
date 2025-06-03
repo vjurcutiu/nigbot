@@ -65,14 +65,18 @@ def verify_token(token: str | None) -> User | None:
     :pydataattr:`flask.Flask.config['SECRET_KEY']`.
     """
     if not token:
+        logger.warning("No token provided in verify_token")
         return None
     try:
         data = jwt.decode(
             token, current_app.config["SECRET_KEY"], algorithms=["HS256"]
         )
-        return User.query.get(data.get("user_id"))
+        user = User.query.get(data.get("user_id"))
+        if user is None:
+            logger.warning("User not found for token user_id: %s", data.get("user_id"))
+        return user
     except Exception:  # pragma: no cover – any JWT error
-        logger.debug("Token verification failed", exc_info=True)
+        logger.warning("Token verification failed", exc_info=True)
         return None
 
 
@@ -186,19 +190,23 @@ def send_message(conv_id: int) -> Tuple[Any, int]:
 @inbox_bp.route("/conversations/<int:conv_id>/mark_read", methods=["POST"])
 @login_required
 def mark_read(conv_id: int) -> Tuple[str, int]:
-    conv, part = get_conversation_or_404(conv_id)
-    updated = (
-        Message.query.filter(
-            Message.conversation_id == conv.id,
-            Message.sender_id != current_user.id,
-            Message.is_read.is_(False),
+    try:
+        conv, part = get_conversation_or_404(conv_id)
+        updated = (
+            Message.query.filter(
+                Message.conversation_id == conv.id,
+                Message.sender_id != current_user.id,
+                Message.is_read.is_(False),
+            )
+            .update({"is_read": True, "read_at": datetime.utcnow()})
         )
-        .update({"is_read": True, "read_at": datetime.utcnow()})
-    )
-    if updated:
-        db.session.commit()
-        logger.debug("Marked %s messages as read in conv %s", updated, conv.id)
-    return "", 204  # <-- Fixes Werkzeug AssertionError
+        if updated:
+            db.session.commit()
+            logger.debug("Marked %s messages as read in conv %s", updated, conv.id)
+        return "", 204  # <-- Fixes Werkzeug AssertionError
+    except Exception as e:
+        logger.error("Error in mark_read: %s", e, exc_info=True)
+        return str(e), 500
 
 
 @inbox_bp.route("/conversations/<int:conv_id>", methods=["DELETE"])
@@ -235,10 +243,16 @@ def register_socket_handlers() -> None:
 
     @socketio.on("join", namespace=SOCKET_NAMESPACE)
     def on_join(data: Dict[str, Any]):  # noqa: D401
-        token = data.get("token")
-        conv_id = int(data.get("conversation_id")) if data.get("conversation_id") is not None else None
+        conv_id = data.get("conversation_id")
+        if conv_id is not None:
+            conv_id = int(conv_id)
 
-        user = verify_token(token)
+        # Use session-based authentication instead of token
+        if not current_user.is_authenticated:
+            disconnect()
+            return
+        user = current_user
+
         if not user:
             disconnect()
             return
@@ -256,10 +270,16 @@ def register_socket_handlers() -> None:
 
     @socketio.on("leave", namespace=SOCKET_NAMESPACE)
     def on_leave(data: Dict[str, Any]):  # noqa: D401
-        token = data.get("token")
-        conv_id = int(data.get("conversation_id")) if data.get("conversation_id") is not None else None
+        conv_id = data.get("conversation_id")
+        if conv_id is not None:
+            conv_id = int(conv_id)
 
-        user = verify_token(token)
+        # Use session-based authentication instead of token
+        if not current_user.is_authenticated:
+            disconnect()
+            return
+        user = current_user
+
         if not user:
             disconnect()
             return
@@ -271,11 +291,17 @@ def register_socket_handlers() -> None:
     @socketio.on("send", namespace=SOCKET_NAMESPACE)
     def on_send(data: Dict[str, Any]):  # noqa: D401
         """Realtime send message (alternative to REST POST)."""
-        token = data.get("token")
         body = data.get("body")
-        conv_id = data.get("conversation_id", type=int)
+        conv_id = data.get("conversation_id")
+        if conv_id is not None:
+            conv_id = int(conv_id)
 
-        user = verify_token(token)
+        # Use session-based authentication instead of token
+        if not current_user.is_authenticated or not body:
+            emit("error", {"message": "unauthorised or empty body"})
+            return
+        user = current_user
+
         if not user or not body:
             emit("error", {"message": "unauthorised or empty body"})
             return

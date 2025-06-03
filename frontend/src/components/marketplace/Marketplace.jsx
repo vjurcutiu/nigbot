@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { fetchCompanies, fetchCandidates, fetchJobs } from '../../services/marketplaceService';
-import { Link } from 'react-router-dom';   // ← add this
+import { Link } from 'react-router-dom';
 import { UserContext } from '../../contexts/UserContext';
+import './Marketplace.css';
 
 const ITEMS_PER_PAGE = 12;
 
@@ -92,15 +93,15 @@ export default function Marketplace() {
   };
 
   return (
-    <div className="flex space-x-6">
+    <div className="marketplace-container">
       {/* Sidebar Filters */}
-      <aside className="w-1/4 border rounded p-4 space-y-4">
-        <h3 className="font-semibold text-lg">Filters</h3>
+      <aside className="marketplace-sidebar">
+        <h3>Filters</h3>
         {/* Example filter: Location */}
         <div>
-          <h4 className="font-medium">Location</h4>
+          <h4>Location</h4>
           {['Remote', 'Onsite', 'Hybrid'].map(loc => (
-            <label key={loc} className="flex items-center space-x-2">
+            <label key={loc}>
               <input
                 type="checkbox"
                 checked={filters.location?.includes(loc) || false}
@@ -113,16 +114,16 @@ export default function Marketplace() {
         {/* Add more filter groups here */}
       </aside>
 
-      <div className="w-3/4 space-y-6">
+      <div className="marketplace-main">
         {/* Header & Controls */}
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold">
+        <div className="marketplace-header">
+          <h2>
             {view === 'companies' ? 'Companies' : view === 'candidates' ? 'Candidates' : 'Jobs'}
           </h2>
           <select
             value={view}
             onChange={handleViewChange}
-            className="border rounded p-2"
+            className="marketplace-select"
           >
             <option value="companies">Companies</option>
             <option value="candidates">Candidates</option>
@@ -137,22 +138,20 @@ export default function Marketplace() {
             placeholder="Search..."
             value={searchTerm}
             onChange={e => { setSearchTerm(e.target.value); setCurrentPage(1); }}
-            className="w-full border rounded p-2"
+            className="marketplace-search"
           />
         </div>
 
         {/* Grid of Items */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="marketplace-grid">
           {pageItems.map(item => (
-          <Link
+            <Link
               key={item.id}
-          to={view === 'companies' ? `/client/${item.id}/public` : view === 'candidates' ? `/candidate/${item.id}/full/public` : `/jobs/${item.id}`}
-              className="border rounded-lg shadow-sm p-4 flex flex-col justify-between cursor-pointer hover:shadow-md transition"
+              to={view === 'companies' ? `/client/${item.id}/public` : view === 'candidates' ? `/candidate/${item.id}/full/public` : `/jobs/${item.id}`}
+              className="marketplace-item"
             >
-              <h3 className="font-semibold text-lg mb-2">
-                {view === 'companies' ? item.name : view === 'candidates' ? item.full_name : item.title}
-              </h3>
-              <p className="text-sm flex-1 overflow-hidden">
+              <h3>{view === 'companies' ? item.name : view === 'candidates' ? item.full_name : item.title}</h3>
+              <p>
                 {view === 'companies' ? item.bio : view === 'candidates' ? item.bio : `${item.location || 'Unknown location'} - ${item.employment_type || 'N/A'} - ${item.company_name || ''}`}
               </p>
             </Link>
@@ -160,11 +159,10 @@ export default function Marketplace() {
         </div>
 
         {/* Pagination Controls */}
-        <div className="flex justify-center items-center space-x-2">
+        <div className="marketplace-pagination">
           <button
             onClick={() => goToPage(Math.max(currentPage - 1, 1))}
             disabled={currentPage === 1}
-            className="px-3 py-1 border rounded disabled:opacity-50"
           >
             Previous
           </button>
@@ -174,7 +172,7 @@ export default function Marketplace() {
               <button
                 key={page}
                 onClick={() => goToPage(page)}
-                className={`px-3 py-1 border rounded ${currentPage === page ? 'bg-blue-500 text-white' : ''}`}
+                className={currentPage === page ? 'active' : ''}
               >
                 {page}
               </button>
@@ -183,7 +181,6 @@ export default function Marketplace() {
           <button
             onClick={() => goToPage(Math.min(currentPage + 1, pageCount))}
             disabled={currentPage === pageCount}
-            className="px-3 py-1 border rounded disabled:opacity-50"
           >
             Next
           </button>

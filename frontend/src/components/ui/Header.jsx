@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import authService from '../../services/authService';
+import './Header.css';
 
 export function Header({ userName, userId, role }) {
   const navigate = useNavigate();
@@ -27,24 +28,21 @@ export function Header({ userName, userId, role }) {
   };
 
   return (
-    <header className="bg-gray-100 p-4 flex justify-between items-center shadow-md">
-      <div className="text-lg font-semibold">
+    <header>
+      <div>
         {userName ? `Welcome, ${userName}` : 'Welcome'}
       </div>
-      <nav className="space-x-4">
-        <Link to="/chat" className="text-blue-600 hover:underline">
+      <nav>
+        <Link to="/chat">
           Chatroom
         </Link>
-        <Link to={getProfileLink()} className="text-blue-600 hover:underline">
+        <Link to={getProfileLink()}>
           Profile
         </Link>
-        <Link to="/marketplace" className="text-blue-600 hover:underline">
+        <Link to="/marketplace">
           Marketplace
         </Link>
-        <button
-          onClick={handleLogout}
-          className="ml-4 px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-        >
+        <button onClick={handleLogout}>
           Log Out
         </button>
       </nav>

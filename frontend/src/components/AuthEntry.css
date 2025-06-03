@@ -1,0 +1,50 @@
+/* Styles for AuthEntry component using CSS variables */
+
+.auth-entry-container {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: var(--spacing-base);
+  background-color: var(--color-background);
+  color: var(--color-text);
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  font-family: var(--font-family-base);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-base);
+  text-align: center;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.auth-entry-container h1 {
+  margin-bottom: var(--spacing-base);
+  font-size: 2rem;
+}
+
+.auth-entry-buttons {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-base);
+}
+
+.auth-entry-button {
+  padding: 0.75em 1.5em;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: var(--border-radius);
+  border: none;
+  cursor: pointer;
+  background-color: var(--color-primary);
+  color: white;
+  transition: background-color 0.3s ease;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.auth-entry-button:hover {
+  background-color: var(--color-primary-hover);
+  color: var(--color-text);
+}

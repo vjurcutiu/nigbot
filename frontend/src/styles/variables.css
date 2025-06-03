@@ -1,0 +1,22 @@
+:root {
+  /* Colors */
+  --color-background: #242424;
+  --color-text: rgba(255, 255, 255, 0.87);
+  --color-primary: #646cff;
+  --color-primary-hover: #535bf2;
+  --color-button-bg: #1a1a1a;
+  --color-button-border-hover: #646cff;
+
+  /* Light mode overrides */
+  --color-background-light: #ffffff;
+  --color-text-light: #213547;
+  --color-primary-hover-light: #747bff;
+  --color-button-bg-light: #f9f9f9;
+
+  /* Fonts */
+  --font-family-base: system-ui, Avenir, Helvetica, Arial, sans-serif;
+
+  /* Spacing */
+  --spacing-base: 1rem;
+  --border-radius: 8px;
+}

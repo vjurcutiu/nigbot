@@ -1,0 +1,71 @@
+/* Styles for LoginForm component using CSS variables */
+
+.login-form {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: var(--spacing-base);
+  background-color: var(--color-background);
+  color: var(--color-text);
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  font-family: var(--font-family-base);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-base);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.login-form input[type="text"],
+.login-form input[type="password"] {
+  padding: 0.75em 1em;
+  font-size: 1rem;
+  border-radius: var(--border-radius);
+  border: 1px solid #ccc;
+  outline: none;
+  font-family: var(--font-family-base);
+}
+
+.login-form input[type="text"]:focus,
+.login-form input[type="password"]:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 5px var(--color-primary);
+}
+
+.login-form button {
+  padding: 0.75em 1.5em;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: var(--border-radius);
+  border: none;
+  cursor: pointer;
+  background-color: var(--color-primary);
+  color: white;
+  transition: background-color 0.3s ease;
+}
+
+.login-form button:hover {
+  background-color: var(--color-primary-hover);
+  color: var(--color-text);
+}
+
+.login-form .error-message {
+  color: #ff4d4f;
+  margin-top: 0.5rem;
+}
+
+.login-form p {
+  margin-top: 1rem;
+  font-size: 0.875rem;
+}
+
+.login-form p a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.login-form p a:hover {
+  text-decoration: underline;
+}

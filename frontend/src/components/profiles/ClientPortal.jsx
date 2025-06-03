@@ -7,6 +7,8 @@ import EditableProfileCard from './EditableProfileCard';
 import { EntityList } from './EntityList';
 import { Button } from '../ui/Button';
 import { UserContext } from '../../contexts/UserContext';
+import api from '../../services/api';
+import './ClientPortal.css';
 
 export default function ClientPortal({ editable = true }) {
   const { userId: paramUserId, companyId: paramCompanyId } = useParams();
@@ -106,8 +108,8 @@ export default function ClientPortal({ editable = true }) {
   };
 
   return (
-    <div className="p-4">
-      <h1 className="text-xl font-semibold mb-4">Client Dashboard</h1>
+    <div className="client-portal-container">
+      <h1>Client Dashboard</h1>
 
       {isOwner && editable && (
         <Button
@@ -117,14 +119,14 @@ export default function ClientPortal({ editable = true }) {
             if (title) setJobTitle(title);
           }}
           disabled={posting}
-          className="mb-4"
+          className="client-portal-button mb-4"
         >
           Post Job
         </Button>
       )}
 
       {jobTitle && editable && (
-        <div className="mb-4">
+        <div className="client-portal-message mb-4">
           <p>Posting job: <strong>{jobTitle}</strong></p>
           <Button variant="default" onClick={handlePostJob} disabled={posting}>
             {posting ? 'Posting...' : 'Confirm Post'}
@@ -144,9 +146,9 @@ export default function ClientPortal({ editable = true }) {
         </div>
       )}
 
-      {errorMessage && editable && <div className="text-red-600 mb-4">{errorMessage}</div>}
+      {errorMessage && editable && <div className="client-portal-message error mb-4">{errorMessage}</div>}
       {jobCreated && editable && (
-        <div className="text-green-600 mb-4">
+        <div className="client-portal-message success mb-4">
           Job posted successfully: {jobCreated.title} (ID: {jobCreated.id})
         </div>
       )}
@@ -154,23 +156,23 @@ export default function ClientPortal({ editable = true }) {
       <EditableProfileCard title="Company Profile" fields={profileFields} initialData={fullCompany}
         onSave={(diff) => clientService.updateCompany(fullCompany.id, diff)} editable={isOwner && editable} />
 
-<EntityList
-  title="Job Positions"
-  items={job_positions}
-  renderItem={({ id, title, department, location, posted_at }) => (
-    <li key={id}>
-      <strong>
-        <Link to={`/job/${id}`} className="text-blue-600 underline">
-          {title}
-        </Link>
-      </strong> — {department} @ {location} (posted on {new Date(posted_at).toLocaleDateString()})
-    </li>
-  )}
-/>
+      <EntityList
+        title="Job Positions"
+        items={job_positions}
+        renderItem={({ id, title, department, location, posted_at }) => (
+          <li key={id}>
+            <strong>
+              <Link to={`/job/${id}`} className="client-portal-nav-link">
+                {title}
+              </Link>
+            </strong> — {department} @ {location} (posted on {new Date(posted_at).toLocaleDateString()})
+          </li>
+        )}
+      />
 
-      <nav className="mt-6">
-        <Link to="/marketplace" className="mr-4 underline">Marketplace</Link>
-        <Link to="/chat" className="underline">Chat</Link>
+      <nav className="client-portal-nav">
+        <Link to="/marketplace" className="client-portal-nav-link mr-4">Marketplace</Link>
+        <Link to="/chat" className="client-portal-nav-link">Chat</Link>
       </nav>
     </div>
   );

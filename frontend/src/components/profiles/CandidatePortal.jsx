@@ -7,6 +7,7 @@ import EditableProfileCard from './EditableProfileCard';
 import { Button } from '../ui/Button';
 import { UserContext } from '../../contexts/UserContext';
 import api from '../../services/api';
+import './CandidatePortal.css';
 
 export default function CandidatePortal({ editable = true }) {
   const { userId: paramUserId, candidateId: paramCandidateId } = useParams();
@@ -86,16 +87,16 @@ export default function CandidatePortal({ editable = true }) {
   };
 
   return (
-    <div className="p-4">
-      <h1 className="text-xl font-semibold mb-4">Candidate Dashboard</h1>
+    <div className="candidate-portal-container">
+      <h1>Candidate Dashboard</h1>
 
       {user?.role === 'client' && (
-        <div className="mb-4">
-          <Button onClick={handleHire} disabled={isHiring}>
+        <div>
+          <Button onClick={handleHire} disabled={isHiring} className="candidate-portal-button">
             {isHiring ? 'Hiring...' : 'Hire Candidate'}
           </Button>
-          {hireError && <p className="text-red-600 mt-2">{hireError}</p>}
-          {hireSuccess && <p className="text-green-600 mt-2">{hireSuccess}</p>}
+          {hireError && <p className="candidate-portal-message error">{hireError}</p>}
+          {hireSuccess && <p className="candidate-portal-message success">{hireSuccess}</p>}
         </div>
       )}
 
@@ -130,7 +131,7 @@ export default function CandidatePortal({ editable = true }) {
         items={applications}
         renderItem={({ id, position, company, date_applied }) => (
           <li key={id}>
-            <Link to={`/applications/${id}`} className="text-blue-600 underline">
+            <Link to={`/applications/${id}`} className="candidate-portal-nav-link">
               {position} @ {company} (applied on {new Date(date_applied).toLocaleDateString()})
             </Link>
           </li>
@@ -153,11 +154,11 @@ export default function CandidatePortal({ editable = true }) {
         )}
       />
 
-      <nav className="mt-4">
-        <Link to="apply" className="mr-4 underline">Apply</Link>
-        {isOwner && editable && <Link to="settings" className="mr-4 underline">Settings</Link>}
-        <Link to="/marketplace" className="mr-4 underline">Marketplace</Link>
-        <Link to="/chat" className="underline">Chat</Link>
+      <nav className="candidate-portal-nav">
+        <Link to="apply" className="candidate-portal-nav-link">Apply</Link>
+        {isOwner && editable && <Link to="settings" className="candidate-portal-nav-link">Settings</Link>}
+        <Link to="/marketplace" className="candidate-portal-nav-link">Marketplace</Link>
+        <Link to="/chat" className="candidate-portal-nav-link">Chat</Link>
       </nav>
 
       <Routes>

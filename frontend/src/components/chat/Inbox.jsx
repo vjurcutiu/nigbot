@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import useSWR, { mutate } from 'swr';
 import useSWRInfinite from 'swr/infinite';
 import { io } from 'socket.io-client';
@@ -6,6 +6,7 @@ import Conversation from './Conversation';
 import MessageWithSender from './MessageWithSender';
 import chatService from '../../services/chatService';
 import ChatArea from './ChatArea';
+import { UserContext } from '../../contexts/UserContext';
 import './Inbox.css';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
@@ -31,6 +32,7 @@ const socket = io(`${API_URL}/inbox`, {
 
 
 export default function Inbox() {
+  const { user } = useContext(UserContext);
   const [activeConv, setActiveConv] = useState(null);
   const [inputText, setInputText] = useState('');
   const [participantMap, setParticipantMap] = useState({});
@@ -257,6 +259,7 @@ export default function Inbox() {
         setInputText={setInputText}
         sendMessage={sendMessage}
         endRef={endRef}
+        currentUserId={user?.userId}
       />
     </div>
   );

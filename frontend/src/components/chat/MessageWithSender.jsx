@@ -1,10 +1,10 @@
 import React from 'react';
 import './MessageWithSender.css';
 
-export default function MessageWithSender({ msg, participantMap }) {
-  // If sender_id is 'me', show "You"
+export default function MessageWithSender({ msg, participantMap, currentUserId }) {
+  // If sender_id matches currentUserId, show "You"
   let senderName = null;
-  if (msg.sender_id === 'me') {
+  if (msg.sender_id === currentUserId) {
     senderName = 'You';
   } else if (participantMap && participantMap[msg.sender_id]) {
     senderName = participantMap[msg.sender_id];
@@ -12,8 +12,8 @@ export default function MessageWithSender({ msg, participantMap }) {
     senderName = 'Loading...';
   }
 
-  // If sender_id is 'me', treat as sent; otherwise, check for current user id if available
-  const isSent = msg.sender_id === 'me';
+  // Determine if message is sent by current user
+  const isSent = msg.sender_id === currentUserId;
 
   return (
     <div

@@ -14,6 +14,7 @@ export default function ChatArea({
   setInputText,
   sendMessage,
   endRef,
+  currentUserId,
 }) {
   if (!activeConv) {
     return (
@@ -32,7 +33,7 @@ export default function ChatArea({
           <div className="text-center text-gray-500 mt-10">No messages in this conversation yet.</div>
         )}
         {messages.map(msg => (
-          <MessageWithSender key={msg.id} msg={msg} participantMap={participantMap} />
+          <MessageWithSender key={msg.id} msg={msg} participantMap={participantMap} currentUserId={currentUserId} />
         ))}
       </div>
       {hasNextPage && (

@@ -17,6 +17,14 @@
   --color-primary-hover-light: #747bff;
   --color-button-bg-light: #f9f9f9;
 
+  /* Chat bubble tail colors */
+  --color-bubble-tail-sent: var(--color-primary-light);
+  --color-bubble-tail-received: var(--color-secondary-light, #d0d0d0);
+
+  /* Chat bubble background colors */
+  --color-bubble-bg-sent: #8a9eff;
+  --color-bubble-bg-received: #d6d6d6;
+
   /* Fonts */
   --font-family-base: system-ui, Avenir, Helvetica, Arial, sans-serif;
 

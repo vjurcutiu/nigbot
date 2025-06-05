@@ -1,6 +1,7 @@
 # blueprints/candidate/routes.py
 from flask import Blueprint, request, jsonify, session
 from sqlalchemy.orm import joinedload
+from utils.security import sanitize_html
 from db.models import (
     CandidateProfile,
     EmploymentHistory,
@@ -305,7 +306,10 @@ def update_candidate_full(candidate_id):
     # 1) Top‑level profile updates
     for field in ("full_name", "email", "phone", "city", "country", "profile_picture", "summary"):
         if field in data.get("profile", {}):
-            setattr(candidate, field, data["profile"][field])
+            value = data["profile"][field]
+            if field == "summary":
+                value = sanitize_html(value)
+            setattr(candidate, field, value)
 
     # 2) Helper to sync collections (same as your PUT version)
     def sync_collection(existing_objs, incoming_list, model, unique_key):

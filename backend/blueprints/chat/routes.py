@@ -46,6 +46,7 @@ from flask_login import current_user, login_required
 from flask_socketio import disconnect, emit, join_room, leave_room
 
 from db.models import Conversation, Message, Participant, User, db
+from utils.security import sanitize_html
 
 from flask_login import login_required, current_user
 from flask import abort
@@ -234,7 +235,7 @@ def send_message(conv_id: int) -> Tuple[Any, int]:
     msg = Message(
         conversation_id=conv.id,
         sender_id=current_user.id,
-        body=body,
+        body=sanitize_html(body),
         created_at=datetime.utcnow(),
     )
     db.session.add(msg)
@@ -376,7 +377,7 @@ def register_socket_handlers() -> None:
         msg = Message(
             conversation_id=conv.id,
             sender_id=user.id,
-            body=body,
+            body=sanitize_html(body),
             created_at=datetime.utcnow(),
         )
         db.session.add(msg)

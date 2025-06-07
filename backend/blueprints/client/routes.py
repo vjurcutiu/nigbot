@@ -1,6 +1,7 @@
 # blueprints/client/routes.py
 from flask import Blueprint, request, jsonify, session
 from db.models import Company, JobPosition, db
+from utils.security import sanitize_html
 
 client_bp = Blueprint('client', __name__)
 
@@ -264,6 +265,8 @@ def update_company(company_id):
         for field, expected in updatable_fields.items():
             if field in data:
                 val = data[field]
+                if field == "bio":
+                    val = sanitize_html(val)
                 try:
                     if expected == "date":
                         setattr(company, field, datetime.fromisoformat(val).date())

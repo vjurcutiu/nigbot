@@ -1,7 +1,8 @@
 from flask import Blueprint, request, jsonify, session
 from db.models import db, User
-from extensions import login_manager
+from extensions import login_manager, limiter
 from flask_login import login_user, logout_user
+from utils.security import sanitize_html
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -19,6 +20,7 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 @auth_bp.route('/login', methods=['POST'])
+@limiter.limit("5 per minute")
 def login():
     data = request.json
     user = User.query.filter_by(username=data['username']).first()
@@ -81,7 +83,7 @@ def signup():
                 city=data.get('city'),
                 country=data.get('country'),
                 profile_picture=data.get('profile_picture'),
-                summary=data.get('summary'),
+                summary=sanitize_html(data.get('summary')),
             )
             db.session.add(candidate_profile)
             db.session.commit()
@@ -90,7 +92,7 @@ def signup():
             company = Company(
                 user_id=user.id,
                 name=data.get('company_name', f"Company of {user.username}"),
-                bio=data.get('company_bio', ''),
+                bio=sanitize_html(data.get('company_bio', '')),
                 website=data.get('company_website', ''),
                 industry=data.get('company_industry', ''),
                 size=data.get('company_size', ''),

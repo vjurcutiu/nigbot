@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, abort
 from sqlalchemy import or_, desc
+from utils.security import sanitize_html
 from datetime import datetime
 
 from db.models import db  # shared SQLAlchemy instance
@@ -66,8 +67,8 @@ def create_job():
     job = JobPosition(
         company_id=data["company_id"],
         title=data["title"],
-        description=data.get("description"),
-        requirements=data.get("requirements"),
+        description=sanitize_html(data.get("description")),
+        requirements=sanitize_html(data.get("requirements")),
         location=data.get("location"),
         employment_type=data.get("employment_type"),
         remote=data.get("remote", False),
@@ -146,10 +147,13 @@ def update_job(job_id: int):
     # Update allowed fields
     for field in ["title", "description", "requirements", "location", "employment_type", "remote", "expires_at"]:
         if field in data:
-            if field == "expires_at" and data[field] is not None:
-                setattr(job, field, datetime.fromisoformat(data[field]))
+            val = data[field]
+            if field in ("description", "requirements"):
+                val = sanitize_html(val)
+            if field == "expires_at" and val is not None:
+                setattr(job, field, datetime.fromisoformat(val))
             else:
-                setattr(job, field, data[field])
+                setattr(job, field, val)
 
     db.session.commit()
     return jsonify(job_to_dict(job))

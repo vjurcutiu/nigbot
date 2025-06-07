@@ -2,7 +2,12 @@
 import eventlet
 eventlet.monkey_patch()
 
-from flask import Flask
+import os
+from flask_wtf.csrf import CSRFProtect, generate_csrf
+from flask_talisman import Talisman
+from extensions import socketio, login_manager, limiter
+
+from flask import Flask, jsonify
 from flask_cors import CORS
 from flask_migrate import Migrate
 
@@ -12,7 +17,6 @@ from blueprints.candidate.routes import candidate_bp
 from blueprints.marketplace.routes import marketplace_bp
 from blueprints.chat.routes import init_app as chat_init_app
 from blueprints.job.routes import job_bp
-from extensions import socketio, login_manager
 from blueprints.extra.addon import addon_bp
 from blueprints.hire.routes import hire_bp
 
@@ -28,11 +32,18 @@ from datetime import timedelta
 
 app = Flask(__name__)
 app.config.update({
-    'SECRET_KEY': 'your-secret-key',
-    'SQLALCHEMY_DATABASE_URI': 'sqlite:///myapp.db',
+    'SECRET_KEY': os.getenv('SECRET_KEY', 'change-this-secret'),
+    'SQLALCHEMY_DATABASE_URI': os.getenv('DATABASE_URL', 'sqlite:///myapp.db'),
     'SQLALCHEMY_TRACK_MODIFICATIONS': False,
     'PERMANENT_SESSION_LIFETIME': timedelta(days=7),
+    'SESSION_COOKIE_HTTPONLY': True,
+    'SESSION_COOKIE_SECURE': True,
+    'SESSION_COOKIE_SAMESITE': 'Lax',
 })
+
+csrf = CSRFProtect(app)
+Talisman(app)
+limiter.init_app(app)
 
 CORS(
     app,
@@ -67,6 +78,11 @@ app.register_blueprint(addon_bp )
 app.register_blueprint(hire_bp)
 
 chat_init_app(app)
+
+@app.route('/api/csrf-token', methods=['GET'])
+def get_csrf_token():
+    """Provide a CSRF token for API clients."""
+    return jsonify({'csrf_token': generate_csrf()})
 
 @app.errorhandler(Exception)
 def handle_exception(e):

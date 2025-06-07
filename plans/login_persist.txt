@@ -1,0 +1,52 @@
+To add persistent user sessions to your application, here is a step-by-step plan:
+
+**Backend (Flask) Changes:**
+
+1. **Set Persistent Sessions on Login:**
+   - In your `/login` route, after a successful login, add `session.permanent = True`. This tells Flask to use a persistent cookie.
+
+2. **Configure Session Lifetime:**
+   - In `app.config` (in `backend/app.py`), add:
+     ```python
+     from datetime import timedelta
+     app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)  # or your preferred duration
+     ```
+   - This sets how long the session cookie will last.
+
+3. **Add a "Current User" Endpoint:**
+   - In `backend/blueprints/auth/routes.py`, add a route like `/api/auth/me` that checks if `session['user_id']` exists and returns the user's info (e.g., username, role). If not logged in, return 401.
+   - Example:
+     ```python
+     @auth_bp.route('/me', methods=['GET'])
+     def me():
+         user_id = session.get('user_id')
+         if not user_id:
+             return jsonify({"error": "Not logged in"}), 401
+         user = User.query.get(user_id)
+         if not user:
+             return jsonify({"error": "User not found"}), 404
+         return jsonify({"username": user.username, "role": user.role}), 200
+     ```
+
+**Frontend (React) Changes:**
+
+4. **Check Session on App Load:**
+   - On app initialization (e.g., in `App.jsx` or a context/provider), make a GET request to `/api/auth/me` using your `api` service.
+   - If the response is 200, set the user as logged in in your app state. If 401, set as logged out.
+   - This ensures the app knows if a user is already logged in (session persisted) after a reload.
+
+**Summary Diagram:**
+```mermaid
+flowchart TD
+    A[User logs in] --> B[Backend sets session.permanent = True]
+    B --> C[Session cookie with 7-day lifetime sent to browser]
+    C --> D[Frontend stores no token, relies on cookie]
+    D --> E[On reload, frontend calls /api/auth/me]
+    E --> F[Backend checks session, returns user info if valid]
+    F --> G[Frontend updates app state: user is logged in]
+```
+
+**Result:**  
+With these changes, user sessions will persist across browser restarts for the configured duration, and the frontend will recognize logged-in users on reload.
+
+If you are satisfied with this plan, please toggle to Act mode so I can implement these changes.

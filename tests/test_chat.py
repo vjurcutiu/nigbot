@@ -56,3 +56,22 @@ def test_chat_rest_endpoints(client, app):
     with app.app_context():
         assert Message.query.get(msg_id) is None or Message.query.get(msg_id)
 
+
+def test_chat_participants_and_messages(client):
+    conv_id, cand_id = create_conversation(client)
+    login(client, 'b')
+    client.post(f'/api/conversations/{conv_id}/messages', json={'body': 'hello'},
+                environ_base={'wsgi.url_scheme': 'https'})
+    resp = client.get(f'/api/conversations/{conv_id}/participants', environ_base={'wsgi.url_scheme':'https'})
+    assert resp.status_code == 200
+    assert isinstance(resp.get_json(), list)
+    resp = client.get(f'/api/conversations/{conv_id}/messages', environ_base={'wsgi.url_scheme':'https'})
+    assert resp.status_code == 200
+    assert resp.get_json()['total'] >= 1
+
+
+def test_socket_handlers_registered():
+    from backend.blueprints.chat.routes import socketio, SOCKET_NAMESPACE
+    handlers = socketio.server.handlers.get(SOCKET_NAMESPACE)
+    assert {'join','leave','send'} <= set(handlers)
+

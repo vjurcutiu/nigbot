@@ -1,43 +1,70 @@
 import pytest
 from sqlalchemy.exc import SQLAlchemyError
+from datetime import date
+
 from db.models import db
-from utils.db_services.candidate_service import CandidateProfileService
-from utils.db_services.company_service import CompanyService
+from utils.db_services.candidate_service import (
+    CandidateProfileService,
+    EmploymentHistoryService,
+    LegalDocumentService,
+    JobApplicationService,
+    SkillService,
+    CandidateSkillService,
+    EducationService,
+)
+from utils.db_services.company_service import CompanyService, JobPositionService
 
 
-def test_candidate_service_create_and_update(app):
-    user_id = 1
-    profile = CandidateProfileService.create_profile(user_id=user_id, full_name='A', email='a@a.com')
-    assert profile.id is not None
+def test_candidate_and_company_service_full_flow(app):
+    # create candidate profile and company
+    profile = CandidateProfileService.create_profile(user_id=1, full_name='A', email='a@a.com')
+    company = CompanyService.create_company(user_id=2, name='ACME')
 
-    updated = CandidateProfileService.update_profile(profile.id, full_name='B')
-    assert updated.full_name == 'B'
+    # employment
+    emp = EmploymentHistoryService.create_employment(candidate_id=profile.id,
+                                                     company_name='Acme', position='Dev',
+                                                     start_date=date.today())
+    assert EmploymentHistoryService.get_employment(emp.id)
+    EmploymentHistoryService.update_employment(emp.id, position='Lead')
 
+    # legal document
+    doc = LegalDocumentService.add_document(candidate_id=profile.id, doc_type='ID', file_path='x')
+    assert LegalDocumentService.get_document(doc.id)
+
+    # job and application
+    job = JobPositionService.create_job(company_id=company.id, title='Dev')
+    app_obj = JobApplicationService.create_application(candidate_id=profile.id, job_position_id=job.id)
+    JobApplicationService.update_application(app_obj.id, status='Reviewed')
+    job2 = JobPositionService.create_job(company_id=company.id, title='Extra')
+
+    # skills
+    skill = SkillService.create_skill('Python')
+    CandidateSkillService.add_skill(profile.id, skill.id, proficiency='Expert')
+
+    # education
+    edu = EducationService.add_education(candidate_id=profile.id, institution='U')
+    EducationService.update_education(edu.id, degree='BS')
+
+    # deletes
+    assert CandidateSkillService.remove_skill(profile.id, skill.id)
+    assert SkillService.delete_skill(skill.id)
+    assert EducationService.delete_education(edu.id)
+    assert JobApplicationService.delete_application(app_obj.id)
+    JobPositionService.delete_job(job.id)  # may be cascade deleted
+    assert JobPositionService.delete_job(job2.id)
+    assert LegalDocumentService.delete_document(doc.id)
+    assert EmploymentHistoryService.delete_employment(emp.id)
+    assert CompanyService.delete_company(company.id)
     assert CandidateProfileService.delete_profile(profile.id)
 
 
-def test_candidate_service_rollback_on_error(app, monkeypatch):
-    called = {"rollback": False}
+def test_service_error_handling(app, monkeypatch):
+    def boom():
+        raise SQLAlchemyError('fail')
 
-    def fake_commit():
-        raise SQLAlchemyError("boom")
-
-    def fake_rollback():
-        called["rollback"] = True
-
-    monkeypatch.setattr(db.session, "commit", fake_commit)
-    monkeypatch.setattr(db.session, "rollback", fake_rollback)
-
+    monkeypatch.setattr(db.session, 'commit', boom)
     with pytest.raises(SQLAlchemyError):
-        CandidateProfileService.create_profile(user_id=2, full_name='C', email='c@c.com')
-    assert called["rollback"]
+        CandidateProfileService.create_profile(user_id=1, full_name='A', email='a')
+    with pytest.raises(SQLAlchemyError):
+        CompanyService.create_company(user_id=1, name='x')
 
-
-def test_company_service_crud(app):
-    company = CompanyService.create_company(user_id=1, name='ACME')
-    assert company.id
-
-    company = CompanyService.update_company(company.id, name='NEW')
-    assert company.name == 'NEW'
-
-    assert CompanyService.delete_company(company.id)

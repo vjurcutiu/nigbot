@@ -11,3 +11,4 @@ bleach
 PyJWT
 pytest
 pytest-flask
+pytest-cov

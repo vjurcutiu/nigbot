@@ -7,7 +7,7 @@ def signup(client, username='user1', password='pass', role='candidate'):
     return client.post(
         '/api/auth/signup',
         json={'username': username, 'password': password, 'role': role, 'email': f'{username}@x.com', 'full_name': username},
-        environ_base={'wsgi.url_scheme': 'https'},
+        environ_base={'wsgi.url_scheme': 'https', 'REMOTE_ADDR': username},
         follow_redirects=True
     )
 
@@ -16,7 +16,7 @@ def login(client, username='user1', password='pass'):
     return client.post(
         '/api/auth/login',
         json={'username': username, 'password': password},
-        environ_base={'wsgi.url_scheme': 'https'},
+        environ_base={'wsgi.url_scheme': 'https', 'REMOTE_ADDR': username},
         follow_redirects=True
     )
 

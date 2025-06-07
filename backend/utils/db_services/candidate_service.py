@@ -1,7 +1,8 @@
 from db.candidate_models import (
     CandidateProfile, EmploymentHistory, LegalDocument,
-    JobApplication, Skill, CandidateSkill, Education
+    Skill, CandidateSkill, Education
 )
+from db.job_models import JobApplication
 from db.models import db
 from sqlalchemy.exc import SQLAlchemyError
 

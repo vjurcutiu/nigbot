@@ -1,0 +1,13 @@
+Flask
+Flask-SQLAlchemy
+Flask-Login
+Flask-Limiter
+Flask-SocketIO
+Flask-Cors
+Flask-Migrate
+Flask-WTF
+Flask-Talisman
+bleach
+PyJWT
+pytest
+pytest-flask

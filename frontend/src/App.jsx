@@ -15,7 +15,7 @@ import { UserProvider, UserContext } from './contexts/UserContext';
 import RedirectToProfile from './components/ui/RedirectToProfile';
 
 function AppRoutes() {
-  const { user, setUser } = useContext(UserContext);
+  const { user, login } = useContext(UserContext);
 
   if (user.loading) {
     return <div>Loading...</div>;
@@ -27,7 +27,7 @@ function AppRoutes() {
       <Route path="/" element={<AuthEntry />} />
 
       {/* Auth */}
-      <Route path="/login" element={<LoginForm onLogin={setUser} />} />
+      <Route path="/login" element={<LoginForm onLogin={login} />} />
       <Route path="/signup" element={<SignupForm />} />
 
       {/* Protected with Layout */}
@@ -43,7 +43,7 @@ function AppRoutes() {
     <Route element={<Layout allowAnyAuthenticated={true} />}>
       <Route path="/candidate" element={<RedirectToProfile role="candidate" />} />
       <Route path="/candidate/:userId" element={<CandidatePortal editable={true} />} />
-      <Route path="/candidate/:candidateId/full/public" element={<CandidatePortal editable={false} />} />
+      <Route path="/candidate/:candidateId/full/public/*" element={<CandidatePortal editable={false} />} />
     </Route>
     <Route element={<Layout allowedRoles={['client', 'candidate']} />}>
       <Route path="/chat" element={<Inbox />} />

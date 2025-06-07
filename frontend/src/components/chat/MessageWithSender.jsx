@@ -1,30 +1,26 @@
 import React from 'react';
-import chatService from '../../services/chatService';
+import './MessageWithSender.css';
 
-export default function MessageWithSender({ msg }) {
-  const [senderName, setSenderName] = React.useState(null);
+export default function MessageWithSender({ msg, participantMap, currentUserId }) {
+  // If sender_id matches currentUserId, show "You"
+  let senderName = null;
+  if (msg.sender_id === currentUserId) {
+    senderName = 'You';
+  } else if (participantMap && participantMap[msg.sender_id]) {
+    senderName = participantMap[msg.sender_id];
+  } else {
+    senderName = 'Loading...';
+  }
 
-  React.useEffect(() => {
-    let isMounted = true;
-    async function fetchParticipants() {
-      const participants = await chatService.getParticipants(msg.conversation_id);
-      if (isMounted) {
-        const displayName = chatService.getDisplayNameFromMap(msg.sender_id, participants);
-        setSenderName(displayName);
-      }
-    }
-    fetchParticipants();
-    return () => {
-      isMounted = false;
-    };
-  }, [msg.sender_id, msg.conversation_id]);
+  // Determine if message is sent by current user
+  const isSent = msg.sender_id === currentUserId;
 
   return (
     <div
-      className={`mb-2 max-w-xs p-2 rounded-lg ${msg.sender_id === chatService.currentUserId ? 'bg-blue-100 self-end' : 'bg-gray-100 self-start'}`}>
-      <div className="font-semibold">{senderName || 'Loading...'}</div>
-      <div>{msg.body}</div>
-      <div className="text-xs text-gray-500">{new Date(msg.created_at).toLocaleTimeString()}</div>
+      className={`message-with-sender ${isSent ? 'message-with-sender--sent' : 'message-with-sender--received'}`}>
+      <div className="message-with-sender__sender">{senderName}</div>
+      <div className="message-with-sender__body">{msg.body}</div>
+      <div className="message-with-sender__timestamp">{new Date(msg.created_at).toLocaleTimeString()}</div>
     </div>
   );
 }

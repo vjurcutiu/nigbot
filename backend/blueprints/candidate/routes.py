@@ -303,6 +303,9 @@ def update_candidate_full(candidate_id):
     if not candidate:
         return jsonify({"error": "Candidate not found"}), 404
 
+    if candidate.user_id != session.get('user_id'):
+        return jsonify({"error": "Forbidden"}), 403
+
     # 1) Top‑level profile updates
     for field in ("full_name", "email", "phone", "city", "country", "profile_picture", "summary"):
         if field in data.get("profile", {}):

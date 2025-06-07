@@ -6,6 +6,7 @@ import EditableProfileCard from './EditableProfileCard';
 import { EntityList } from './EntityList';
 import { Button } from '../ui/Button';
 import { UserContext } from '../../contexts/UserContext';
+import './JobPortal.css';
 
 export default function JobPortal() {
   const { user } = useContext(UserContext);
@@ -177,8 +178,8 @@ export default function JobPortal() {
   }
 
   return (
-    <div className="p-4">
-      <h1 className="text-xl font-semibold mb-4">Job Dashboard</h1>
+    <div className="job-portal">
+      <h1 className="job-portal__header">Job Dashboard</h1>
 
       {user.role === 'candidate' && jobData && (
         <>
@@ -189,59 +190,62 @@ export default function JobPortal() {
             editable={false}
           />
           {applications.some(app => app.candidate_name === user.fullName) ? (
-            <div className="mb-4 text-gray-600">You have already applied to this job.</div>
+            <div className="job-portal__feedback">{'You have already applied to this job.'}</div>
           ) : (
-            <Button
-              onClick={() => {
-                // Redirect to job apply form for this job
-                window.location.href = `/jobs/${jobData.id}/apply`;
-              }}
-              className="mb-4"
-            >
-              Apply
-            </Button>
+            <div className="job-portal__button-group">
+              <Button
+                onClick={() => {
+                  // Redirect to job apply form for this job
+                  window.location.href = `/jobs/${jobData.id}/apply`;
+                }}
+              >
+                Apply
+              </Button>
+            </div>
           )}
         </>
       )}
 
       {user.role === 'client' && fullCompany && (
         <>
-          <Button
-            variant="default"
-            onClick={() => {
-              const title = prompt('Enter job title:');
-              if (title) setJobTitle(title);
-            }}
-            disabled={posting}
-            className="mb-4"
-          >
-            Post Job
-          </Button>
+          <div className="job-portal__button-group">
+            <Button
+              variant="default"
+              onClick={() => {
+                const title = prompt('Enter job title:');
+                if (title) setJobTitle(title);
+              }}
+              disabled={posting}
+            >
+              Post Job
+            </Button>
+          </div>
 
           {jobTitle && (
-            <div className="mb-4">
+            <div className="job-portal__feedback">
               <p>Posting job: <strong>{jobTitle}</strong></p>
-              <Button variant="default" onClick={handlePostJob} disabled={posting}>
-                {posting ? 'Posting...' : 'Confirm Post'}
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setJobTitle('');
-                  setErrorMessage(null);
-                  setJobCreated(null);
-                }}
-                disabled={posting}
-                className="ml-2"
-              >
-                Cancel
-              </Button>
+              <div className="job-portal__button-group">
+                <Button variant="default" onClick={handlePostJob} disabled={posting}>
+                  {posting ? 'Posting...' : 'Confirm Post'}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setJobTitle('');
+                    setErrorMessage(null);
+                    setJobCreated(null);
+                  }}
+                  disabled={posting}
+                >
+                  Cancel
+                </Button>
+              </div>
             </div>
           )}
 
-          {errorMessage && <div className="text-red-600 mb-4">{errorMessage}</div>}
+          {errorMessage && <div className="job-portal__feedback job-portal__feedback--error">{errorMessage}</div>}
           {jobCreated && (
-            <div className="text-green-600 mb-4">
+            <div className="job-portal__feedback job-portal__feedback--success">
               Job posted successfully: {jobCreated.title} (ID: {jobCreated.id})
             </div>
           )}
@@ -263,7 +267,7 @@ export default function JobPortal() {
                 items={applications}
                 renderItem={({ id, candidate_name, status, applied_at }) => (
                   <li key={id}>
-                    <Link to={`/applications/${id}`} className="text-blue-600 underline">
+                    <Link to={`/applications/${id}`} className="job-portal__nav-link">
                       <strong>{candidate_name}</strong> — {status} (applied on {new Date(applied_at).toLocaleDateString()})
                     </Link>
                   </li>
@@ -274,9 +278,9 @@ export default function JobPortal() {
         </>
       )}
 
-      <nav className="mt-6">
-        <Link to="/marketplace" className="mr-4 underline">Marketplace</Link>
-        <Link to="/chat" className="underline">Chat</Link>
+      <nav className="job-portal__nav">
+        <Link to="/marketplace" className="job-portal__nav-link">Marketplace</Link>
+        <Link to="/chat" className="job-portal__nav-link">Chat</Link>
       </nav>
     </div>
   );

@@ -21,6 +21,10 @@ export default function ClientPortal({ editable = true }) {
     return <div>Loading profile...</div>;
   }
 
+  if (user.loading) {
+    return <div>Loading user data...</div>;
+  }
+
   const loadOverview = useCallback(() => {
     if (editable) {
       return clientService.getDashboard();
@@ -42,6 +46,9 @@ export default function ClientPortal({ editable = true }) {
   });
 
   const isOwner = user?.userId && fullCompany?.user_id && user.userId === fullCompany.user_id;
+
+  // Prevent editable from being true until user loading is false and ownership is confirmed
+  const effectiveEditable = !user.loading && isOwner && editable;
 
   const [posting, setPosting] = useState(false);
   const [jobTitle, setJobTitle] = useState('');
@@ -111,7 +118,7 @@ export default function ClientPortal({ editable = true }) {
     <div className="client-portal-container">
       <h1>Client Dashboard</h1>
 
-      {isOwner && editable && (
+      {effectiveEditable && (
         <Button
           variant="default"
           onClick={() => {
@@ -125,7 +132,7 @@ export default function ClientPortal({ editable = true }) {
         </Button>
       )}
 
-      {jobTitle && editable && (
+      {jobTitle && effectiveEditable && (
         <div className="client-portal-message mb-4">
           <p>Posting job: <strong>{jobTitle}</strong></p>
           <Button variant="default" onClick={handlePostJob} disabled={posting}>
@@ -146,15 +153,21 @@ export default function ClientPortal({ editable = true }) {
         </div>
       )}
 
-      {errorMessage && editable && <div className="client-portal-message error mb-4">{errorMessage}</div>}
-      {jobCreated && editable && (
+      {errorMessage && effectiveEditable && <div className="client-portal-message error mb-4">{errorMessage}</div>}
+      {jobCreated && effectiveEditable && (
         <div className="client-portal-message success mb-4">
           Job posted successfully: {jobCreated.title} (ID: {jobCreated.id})
         </div>
       )}
 
-      <EditableProfileCard title="Company Profile" fields={profileFields} initialData={fullCompany}
-        onSave={(diff) => clientService.updateCompany(fullCompany.id, diff)} editable={isOwner && editable} />
+      <EditableProfileCard
+        key={profileId + '-' + (isOwner ? 'owner' : 'notowner')}
+        title="Company Profile"
+        fields={profileFields}
+        initialData={fullCompany}
+        onSave={(diff) => clientService.updateCompany(fullCompany.id, diff)}
+        editable={effectiveEditable}
+      />
 
       <EntityList
         title="Job Positions"

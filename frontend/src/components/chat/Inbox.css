@@ -1,0 +1,231 @@
+@import '../../styles/variables.css';
+
+.inbox {
+  display: flex;
+  height: 75vh;
+  background: var(--color-background);
+  box-sizing: border-box;
+  transition: all 0.3s ease;
+}
+
+.inbox--sidebar-collapsed .inbox__sidebar {
+  width: 40px;
+  min-width: 40px;
+  max-width: 40px;
+  overflow-x: hidden;
+  padding: var(--spacing-xs);
+}
+
+.inbox--sidebar-collapsed .inbox__sidebar-toggle {
+  margin-bottom: var(--spacing-sm);
+}
+
+.inbox__sidebar {
+  width: 25%;
+  min-width: 220px;
+  max-width: 350px;
+  border-right: 1px solid var(--color-border);
+  padding: var(--spacing-sm);
+  overflow-y: auto;
+  background: var(--color-surface);
+  box-sizing: border-box;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  margin-right: var(--spacing-base);
+}
+
+.inbox__sidebar-toggle {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  align-self: flex-end;
+  margin-bottom: var(--spacing-md);
+  color: var(--color-text-muted);
+  transition: color 0.2s;
+}
+
+.inbox__sidebar-toggle:hover,
+.inbox__sidebar-toggle:focus {
+  color: var(--color-text-strong);
+}
+
+.inbox__chat {
+  width: 75%;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--color-background);
+  position: relative;
+  padding-left: var(--spacing-base);
+}
+
+.inbox__chat-header {
+  padding: var(--spacing-md);
+  border-bottom: none;
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-lg);
+  color: var(--color-text-strong);
+  background: var(--color-surface);
+}
+
+.inbox__messages {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: var(--spacing-md);
+  padding-bottom: 80px; /* increased space for input row */
+  scroll-behavior: smooth;
+}
+
+.inbox__input-row {
+  display: flex;
+  align-items: center;
+  padding: var(--spacing-sm);
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface);
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  width: 75%;
+  box-sizing: border-box;
+  z-index: 9999;
+}
+
+.inbox__input {
+  flex: 1;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  font-size: var(--font-size-base);
+  background: var(--color-input-bg);
+  color: var(--color-text);
+}
+
+.inbox__send-btn {
+  margin-left: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-md);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  border: none;
+  border-radius: var(--border-radius-md);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.inbox__send-btn:hover,
+.inbox__send-btn:focus {
+  background: var(--color-primary-dark);
+}
+
+/* Additional styles for chat component margins, hovers, rounded corners, and text styles */
+
+/* Margin around inbox component */
+.inbox {
+  margin: var(--spacing-base);
+  border-radius: var(--border-radius);
+}
+
+/* Hover effect for inbox sidebar items */
+.inbox__sidebar-item {
+  padding: var(--spacing-base);
+  border-radius: var(--border-radius-lg);
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.15s ease;
+  user-select: none;
+  margin-bottom: calc(var(--spacing-base) * 2);
+  background-color: var(--color-surface);
+}
+
+.inbox__sidebar-item:hover,
+.inbox__sidebar-item:focus {
+  background-color: var(--color-primary-light);
+  outline: none;
+  transform: translateX(2px);
+  box-shadow: 0 1px 4px rgba(100, 108, 255, 0.4);
+  cursor: pointer;
+  color: var(--color-on-primary);
+}
+
+/* Selected sidebar item */
+.inbox__sidebar-item.selected {
+  background-color: var(--color-primary);
+  color: var(--color-text);
+  font-weight: 600;
+  box-shadow: 0 0 8px var(--color-primary);
+  transform: translateX(0);
+}
+
+/* Text styles for sidebar item */
+.inbox__sidebar-item .sender-name {
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.3s ease;
+}
+
+.inbox__sidebar-item.selected .sender-name {
+  color: var(--color-text);
+}
+
+/* Last message preview text */
+.inbox__sidebar-item .last-message {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.7);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.3s ease;
+}
+
+.inbox__sidebar-item.selected .last-message {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* Rounded corners for avatars in sidebar */
+.inbox__sidebar-item .avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: var(--spacing-base);
+  object-fit: cover;
+  border: 2px solid var(--color-primary);
+  transition: border-color 0.3s ease, box-shadow 0.2s ease;
+}
+
+.inbox__sidebar-item:hover .avatar {
+  border-color: var(--color-primary-hover);
+  box-shadow: 0 0 6px var(--color-primary-hover);
+}
+
+/* Scrollbar styling for sidebar */
+.inbox__sidebar::-webkit-scrollbar {
+  width: 10px;
+}
+
+.inbox__sidebar::-webkit-scrollbar-track {
+  background: var(--color-surface);
+  border-radius: var(--border-radius-xl);
+}
+
+.inbox__sidebar::-webkit-scrollbar-thumb {
+  background-color: var(--color-primary-light);
+  border-radius: var(--border-radius-xl);
+  border: 3px solid var(--color-surface);
+}
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+  .inbox__sidebar {
+    min-width: 140px;
+    max-width: 220px;
+    padding: var(--spacing-sm);
+  }
+  .inbox__chat {
+    padding: var(--spacing-sm);
+  }
+}

@@ -1,0 +1,56 @@
+@import '../../styles/variables.css';
+
+.job-portal {
+  padding: var(--spacing-lg);
+  background: var(--color-background);
+  min-height: 100vh;
+}
+
+.job-portal__header {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--spacing-md);
+}
+
+.job-portal__button-group {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.job-portal__feedback {
+  margin-bottom: var(--spacing-md);
+  font-size: var(--font-size-base);
+}
+
+.job-portal__feedback--error {
+  color: var(--color-danger);
+}
+
+.job-portal__feedback--success {
+  color: var(--color-success);
+}
+
+.job-portal__nav {
+  margin-top: var(--spacing-lg);
+}
+
+.job-portal__nav-link {
+  margin-right: var(--spacing-md);
+  color: var(--color-link);
+  text-decoration: underline;
+  font-size: var(--font-size-base);
+}
+
+.job-portal__nav-link:last-child {
+  margin-right: 0;
+}
+
+@media (max-width: 600px) {
+  .job-portal {
+    padding: var(--spacing-sm);
+  }
+  .job-portal__header {
+    font-size: var(--font-size-lg);
+  }
+}

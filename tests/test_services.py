@@ -166,3 +166,43 @@ def test_job_position_service_branches(app, monkeypatch):
     # missing job branches
     assert JobPositionService.update_job(9999, title='x') is None
     assert JobPositionService.delete_job(9999) is False
+
+def test_candidate_service_commit_failures_extended(app, monkeypatch):
+    profile = CandidateProfileService.create_profile(user_id=11, full_name='Init', email='init@x.com')
+    emp = EmploymentHistoryService.create_employment(candidate_id=profile.id, company_name='A', position='Dev', start_date=date.today())
+    doc = LegalDocumentService.add_document(candidate_id=profile.id, doc_type='ID', file_path='f')
+    company = CompanyService.create_company(user_id=99, name='TestCo')
+    job = JobPositionService.create_job(company_id=company.id, title='Job')
+    application = JobApplicationService.create_application(candidate_id=profile.id, job_position_id=job.id)
+    skill = SkillService.create_skill('Py')
+    CandidateSkillService.add_skill(profile.id, skill.id, proficiency='Int')
+    edu = EducationService.add_education(candidate_id=profile.id, institution='U')
+
+    def check(func):
+        with monkeypatch.context() as m:
+            called = {}
+            orig_rb = db.session.rollback
+            def boom():
+                raise SQLAlchemyError('bad')
+            def record():
+                called['r'] = True
+                orig_rb()
+            m.setattr(db.session, 'commit', boom)
+            m.setattr(db.session, 'rollback', record)
+            with pytest.raises(SQLAlchemyError):
+                func()
+            assert called.get('r') is True
+
+    check(lambda: CandidateProfileService.update_profile(profile.id, full_name='Z'))
+    check(lambda: CandidateProfileService.delete_profile(profile.id))
+    check(lambda: EmploymentHistoryService.update_employment(emp.id, position='X'))
+    check(lambda: EmploymentHistoryService.delete_employment(emp.id))
+    check(lambda: LegalDocumentService.delete_document(doc.id))
+    check(lambda: JobApplicationService.update_application(application.id, status='New'))
+    check(lambda: JobApplicationService.delete_application(application.id))
+    check(lambda: SkillService.delete_skill(skill.id))
+    new_skill = SkillService.create_skill('ExtraS')
+    CandidateSkillService.add_skill(profile.id, new_skill.id)
+    check(lambda: CandidateSkillService.remove_skill(profile.id, new_skill.id))
+    check(lambda: EducationService.update_education(edu.id, degree='MS'))
+    check(lambda: EducationService.delete_education(edu.id))

@@ -1,26 +1,31 @@
 import pytest
-from backend.extensions import socketio
+from backend.extensions import socketio, limiter
 from db.models import db
 from db.chat_models import Message
 
 # Reuse helpers from test_api_routes
 from tests.test_api_routes import signup_candidate, signup_client, login
+import uuid
 
 
 def create_conversation(client):
-    signup_candidate(client, 'b')
-    signup_client(client, 'c')
-    resp = login(client, 'c')
+    suffix = uuid.uuid4().hex[:6]
+    cand_name = f'b{suffix}'
+    client_name = f'c{suffix}'
+    signup_candidate(client, cand_name)
+    signup_client(client, client_name)
+    limiter.enabled = False
+    resp = login(client, client_name)
     company_id = resp.get_json().get('company_id')
     job_resp = client.post('/api/jobs', json={'company_id': company_id, 'title': 'Dev'},
                            environ_base={'wsgi.url_scheme': 'https'})
     job_id = job_resp.get_json()['id']
-    login(client, 'b')
-    cand_id = client.post('/api/auth/login', json={'username': 'b', 'password': 'pass'},
+    login(client, cand_name)
+    cand_id = client.post('/api/auth/login', json={'username': cand_name, 'password': 'pass'},
                           environ_base={'wsgi.url_scheme': 'https', 'REMOTE_ADDR': 'b'}).get_json()['candidate_id']
     client.post(f'/api/jobs/{job_id}/apply', json={'candidate_id': cand_id},
                 environ_base={'wsgi.url_scheme': 'https'})
-    login(client, 'c')
+    login(client, client_name)
     hire_resp = client.post(f'/api/hire/{cand_id}', json={'job_position_id': job_id},
                             environ_base={'wsgi.url_scheme': 'https'})
     conv_id = hire_resp.get_json()['conversation_id']
@@ -74,4 +79,28 @@ def test_socket_handlers_registered():
     from backend.blueprints.chat.routes import socketio, SOCKET_NAMESPACE
     handlers = socketio.server.handlers.get(SOCKET_NAMESPACE)
     assert {'join','leave','send'} <= set(handlers)
+
+from unittest.mock import patch
+from backend.extensions import socketio
+from backend.blueprints.chat.routes import SOCKET_NAMESPACE
+
+
+def test_mark_read_error_branch(client):
+    conv_id, _ = create_conversation(client)
+    login(client, 'c')
+    client.post(f'/api/conversations/{conv_id}/messages', json={'body':'x'}, environ_base={'wsgi.url_scheme':'https'})
+    login(client, 'b')
+    class DummyQuery:
+        def filter(self, *a, **k):
+            raise Exception('fail')
+    with patch('backend.blueprints.chat.routes.Message.query', DummyQuery()):
+        resp = client.post(f'/api/conversations/{conv_id}/mark_read', environ_base={'wsgi.url_scheme':'https'})
+        assert resp.status_code == 500
+        assert b'fail' in resp.data
+
+
+
+from types import SimpleNamespace
+
+
 

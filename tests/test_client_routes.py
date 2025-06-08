@@ -50,3 +50,12 @@ def test_client_debug_endpoints_and_patch(client, app):
     resp = client.patch(f'/api/client/{comp_id}', json={'name':'Bad'}, environ_base={'wsgi.url_scheme':'https'})
     assert resp.status_code == 403
 
+
+def test_update_company_validation_error(client):
+    signup_client(client, 'vali')
+    login(client, 'vali')
+    comp_id = client.post('/api/auth/login', json={'username':'vali','password':'pass'},
+                          environ_base={'wsgi.url_scheme':'https','REMOTE_ADDR':'vali'}).get_json()['company_id']
+    resp = client.patch(f'/api/client/{comp_id}', json={'latitude': 'bad'}, environ_base={'wsgi.url_scheme':'https'})
+    assert resp.status_code == 400
+

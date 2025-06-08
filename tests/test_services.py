@@ -85,3 +85,13 @@ def test_db_service_returns_and_rollback(app, monkeypatch):
     with pytest.raises(SQLAlchemyError):
         EducationService.add_education(candidate_id=profile.id, institution='U')
     assert called.get('rollback') is True
+
+
+def test_service_missing_objects(app):
+    assert CandidateProfileService.get_profile(9999) is None
+    assert CandidateProfileService.update_profile(9999, full_name='x') is None
+    assert CandidateProfileService.delete_profile(9999) is False
+    assert CompanyService.get_company(9999) is None
+    assert CompanyService.update_company(9999, name='y') is None
+    assert CompanyService.delete_company(9999) is False
+    assert JobPositionService.delete_job(9999) is False

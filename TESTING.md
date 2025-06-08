@@ -8,6 +8,10 @@
 pip install -r requirements.txt
 ```
 
+The backend uses Flask-SocketIO which requires the ``eventlet`` package. This
+is included in ``requirements.txt`` but may need system headers when installing
+locally.
+
 2. Run unit tests
 
 ```bash

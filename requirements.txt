@@ -12,3 +12,4 @@ PyJWT
 pytest
 pytest-flask
 pytest-cov
+eventlet

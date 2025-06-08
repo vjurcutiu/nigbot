@@ -95,3 +95,26 @@ def test_service_missing_objects(app):
     assert CompanyService.update_company(9999, name='y') is None
     assert CompanyService.delete_company(9999) is False
     assert JobPositionService.delete_job(9999) is False
+
+
+def test_service_additional_missing_branches(app):
+    profile = CandidateProfileService.create_profile(user_id=4, full_name='Z', email='z@z.com')
+    skill = SkillService.create_skill('Extra')
+
+    # removing a skill that was never added
+    assert CandidateSkillService.remove_skill(profile.id, skill.id) is False
+
+    # deleting a non-existent skill
+    assert SkillService.delete_skill(9999) is False
+
+    # employment branches
+    assert EmploymentHistoryService.update_employment(9999, position='Dev') is None
+    assert EmploymentHistoryService.delete_employment(9999) is False
+
+    # application branches
+    assert JobApplicationService.update_application(9999, status='New') is None
+    assert JobApplicationService.delete_application(9999) is False
+
+    # education branches
+    assert EducationService.update_education(9999, degree='PhD') is None
+    assert EducationService.delete_education(9999) is False

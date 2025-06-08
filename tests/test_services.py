@@ -118,3 +118,51 @@ def test_service_additional_missing_branches(app):
     # education branches
     assert EducationService.update_education(9999, degree='PhD') is None
     assert EducationService.delete_education(9999) is False
+
+
+def test_company_service_commit_failures(app, monkeypatch):
+    company = CompanyService.create_company(user_id=5, name='ErrCo')
+
+    def boom():
+        raise SQLAlchemyError('boom')
+    called = {}
+    def record_rollback():
+        called['rollback'] = True
+
+    monkeypatch.setattr(db.session, 'commit', boom)
+    monkeypatch.setattr(db.session, 'rollback', record_rollback)
+    with pytest.raises(SQLAlchemyError):
+        CompanyService.update_company(company.id, name='New')
+    assert called.get('rollback') is True
+
+    called.clear()
+    with pytest.raises(SQLAlchemyError):
+        CompanyService.delete_company(company.id)
+    assert called.get('rollback') is True
+
+
+def test_job_position_service_branches(app, monkeypatch):
+    company = CompanyService.create_company(user_id=6, name='JobsCo')
+    job = JobPositionService.create_job(company_id=company.id, title='Dev')
+
+    # update failure path
+    def boom():
+        raise SQLAlchemyError('fail')
+    called = {}
+    def record_rollback():
+        called['rollback'] = True
+
+    monkeypatch.setattr(db.session, 'commit', boom)
+    monkeypatch.setattr(db.session, 'rollback', record_rollback)
+    with pytest.raises(SQLAlchemyError):
+        JobPositionService.update_job(job.id, title='Lead')
+    assert called.get('rollback') is True
+
+    called.clear()
+    with pytest.raises(SQLAlchemyError):
+        JobPositionService.delete_job(job.id)
+    assert called.get('rollback') is True
+
+    # missing job branches
+    assert JobPositionService.update_job(9999, title='x') is None
+    assert JobPositionService.delete_job(9999) is False

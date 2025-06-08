@@ -68,3 +68,20 @@ def test_service_error_handling(app, monkeypatch):
     with pytest.raises(SQLAlchemyError):
         CompanyService.create_company(user_id=1, name='x')
 
+
+def test_db_service_returns_and_rollback(app, monkeypatch):
+    profile = CandidateProfileService.create_profile(user_id=3, full_name='B', email='b@b.com')
+    skill = SkillService.create_skill('SQL')
+    cs = CandidateSkillService.add_skill(profile.id, skill.id, proficiency='Adv')
+    assert cs.skill_id == skill.id
+    assert CandidateSkillService.remove_skill(profile.id, skill.id) is True
+    called = {}
+    def boom_commit():
+        raise SQLAlchemyError('oops')
+    def record_rollback():
+        called['rollback'] = True
+    monkeypatch.setattr(db.session, 'commit', boom_commit)
+    monkeypatch.setattr(db.session, 'rollback', record_rollback)
+    with pytest.raises(SQLAlchemyError):
+        EducationService.add_education(candidate_id=profile.id, institution='U')
+    assert called.get('rollback') is True

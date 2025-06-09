@@ -51,12 +51,12 @@ CORS(
     resources={
         r"/api/*": {
             "origins": ["http://localhost:5173", "http://localhost:5174"],
-            "allow_headers": ["Content-Type", "Authorization"],
+            "allow_headers": ["Content-Type", "Authorization", "X-CSRFToken"],
             "methods": ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]
         },
         r"/socket.io/*": {
             "origins": ["http://localhost:5173", "http://localhost:5174"],
-            "allow_headers": ["Content-Type", "Authorization"],
+            "allow_headers": ["Content-Type", "Authorization", "X-CSRFToken"],
             "methods": ["GET", "POST", "OPTIONS"]
         }
     }

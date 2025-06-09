@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { useContext } from 'react';
+import { useContext, useEffect } from 'react';
 import AuthEntry from './components/AuthEntry';
 import LoginForm from './components/LoginForm';
 import SignupForm from './components/SignupForm';
@@ -13,6 +13,7 @@ import ApplicationPortal from './components/marketplace/ApplicationPortal';
 import JobApplyForm from './components/marketplace/JobApplyForm';
 import { UserProvider, UserContext } from './contexts/UserContext';
 import RedirectToProfile from './components/ui/RedirectToProfile';
+import { setCSRFToken } from './services/api';
 
 function AppRoutes() {
   const { user, login } = useContext(UserContext);
@@ -61,6 +62,10 @@ function AppRoutes() {
 }
 
 function App() {
+  useEffect(() => {
+    setCSRFToken();
+  }, []);
+
   return (
     <UserProvider>
       <BrowserRouter>

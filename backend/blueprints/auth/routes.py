@@ -89,9 +89,14 @@ def signup():
             db.session.commit()
         elif user.role == 'client':
             from db.company_models import Company
+            company_name = data.get('company_name', f"Company of {user.username}")
+            # Check if company name already exists
+            existing_company = Company.query.filter_by(name=company_name).first()
+            if existing_company:
+                return jsonify({"error": "Company name already taken"}), 409
             company = Company(
                 user_id=user.id,
-                name=data.get('company_name', f"Company of {user.username}"),
+                name=company_name,
                 bio=sanitize_html(data.get('company_bio', '')),
                 website=data.get('company_website', ''),
                 industry=data.get('company_industry', ''),

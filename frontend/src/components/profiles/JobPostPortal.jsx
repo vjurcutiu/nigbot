@@ -76,6 +76,14 @@ export default function JobPostPortal() {
         expires_at: expiresAt || null,
       };
       const createdJob = await jobService.createJob(jobDataToCreate);
+      // Clear form fields after successful post
+      setTitle('');
+      setDescription('');
+      setRequirements('');
+      setLocation('');
+      setEmploymentType('');
+      setRemote(false);
+      setExpiresAt('');
       navigate(`/jobs/${createdJob.id}`);
     } catch (err) {
       setErrorMessage(err.response?.data?.description || 'Failed to create job');

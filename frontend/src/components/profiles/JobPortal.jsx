@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import jobService from '../../services/jobService';
 import clientService from '../../services/clientService';
 import EditableProfileCard from './EditableProfileCard';
@@ -10,6 +10,7 @@ import './JobPortal.css';
 
 export default function JobPortal() {
   const { user } = useContext(UserContext);
+  const { jobId } = useParams();
   const [jobData, setJobData] = useState(null);
   const [applications, setApplications] = useState([]);
   const [posting, setPosting] = useState(false);
@@ -19,7 +20,6 @@ export default function JobPortal() {
   const [fullCompany, setFullCompany] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // TODO: FIX FLICKERING
   useEffect(() => {
     setLoading(true);
     if (user?.role === 'client') {
@@ -55,82 +55,22 @@ export default function JobPortal() {
     }
   }, [user]);
 
-  // New effect to load job data for logged in companies that do not own the job
   useEffect(() => {
-    setLoading(true);
-    if (user?.role === 'client' && !fullCompany) {
-      // Fetch job data without company ownership context
-      // Assuming jobId is available, here we simulate with a fixed jobId or prop
-      const jobId = 1; // Replace with actual jobId from props or route params
-      console.log('JobPortal: fetching job and applications for jobId:', jobId);
-      jobService.getJob(jobId)
-        .then((job) => {
-          console.log('JobPortal: fetched job:', job);
-          setJobData(job);
-          // Fetch applications for this job
-          return jobService.getJobApplications(job.id);
-        })
-        .then((apps) => {
-          console.log('JobPortal: fetched applications:', apps);
-          setApplications(apps);
-        })
-        .catch(console.error)
-        .finally(() => setLoading(false));
+    if (!jobId) {
+      return;
     }
-  }, [user, fullCompany]);
-  
-  useEffect(() => {
     setLoading(true);
-    if (fullCompany && fullCompany.job_positions && fullCompany.job_positions.length > 0) {
-      const firstJobId = fullCompany.job_positions[0].id;
-      console.log('JobPortal: fetching job and applications for firstJobId:', firstJobId);
-      jobService.getJob(firstJobId)
-        .then((job) => {
-          console.log('JobPortal: fetched job:', job);
-          setJobData(job);
-          // Fetch applications for this job
-          return jobService.getJobApplications(job.id);
-        })
-        .then((apps) => {
-          console.log('JobPortal: fetched applications:', apps);
-          setApplications(apps);
-        })
-        .catch(console.error)
-        .finally(() => setLoading(false));
-    } else {
-      setJobData(null);
-      setApplications([]);
-      setLoading(false);
-    }
-  }, [fullCompany]);
-
-  useEffect(() => {
-    setLoading(true);
-    if (fullCompany && fullCompany.job_positions && fullCompany.job_positions.length > 0) {
-      const firstJobId = fullCompany.job_positions[0].id;
-      jobService.getJob(firstJobId)
-        .then(setJobData)
-        .catch(console.error)
-        .finally(() => setLoading(false));
-    } else {
-      setJobData(null);
-      setLoading(false);
-    }
-  }, [fullCompany]);
-
-  // New effect to fetch job data for candidate based on jobId param
-  useEffect(() => {
-    setLoading(true);
-    if (user?.role === 'candidate') {
-      // Assuming jobId is passed as a prop or via route params, here we simulate fetching jobId
-      // For demonstration, fetch the first job from marketplace or a fixed jobId
-      const jobId = fullCompany?.job_positions?.[0]?.id || 1; // fallback jobId
-      jobService.getJob(jobId)
-        .then(setJobData)
-        .catch(console.error)
-        .finally(() => setLoading(false));
-    }
-  }, [user, fullCompany]);
+    jobService.getJob(jobId)
+      .then((job) => {
+        setJobData(job);
+        return jobService.getJobApplications(job.id);
+      })
+      .then((apps) => {
+        setApplications(apps);
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, [jobId]);
 
   const profileFields = [
     { name: 'title', label: 'Job Title' },
@@ -179,8 +119,7 @@ export default function JobPortal() {
 
   return (
     <div className="job-portal">
-      <h1 className="job-portal__header">Job Dashboard</h1>
-
+    
       {user.role === 'candidate' && jobData && (
         <>
           <EditableProfileCard
@@ -195,7 +134,6 @@ export default function JobPortal() {
             <div className="job-portal__button-group">
               <Button
                 onClick={() => {
-                  // Redirect to job apply form for this job
                   window.location.href = `/jobs/${jobData.id}/apply`;
                 }}
               >
@@ -207,41 +145,8 @@ export default function JobPortal() {
       )}
 
       {user.role === 'client' && fullCompany && (
-        <>
-          <div className="job-portal__button-group">
-            <Button
-              variant="default"
-              onClick={() => {
-                // Navigate to post job mode route
-                window.location.href = '/jobs/post';
-              }}
-              disabled={posting}
-            >
-              Post Job
-            </Button>
-          </div>
-
-          {jobTitle && (
-            <div className="job-portal__feedback">
-              <p>Posting job: <strong>{jobTitle}</strong></p>
-              <div className="job-portal__button-group">
-                <Button variant="default" onClick={handlePostJob} disabled={posting}>
-                  {posting ? 'Posting...' : 'Confirm Post'}
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setJobTitle('');
-                    setErrorMessage(null);
-                    setJobCreated(null);
-                  }}
-                  disabled={posting}
-                >
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          )}
+        <>          
+          
 
           {errorMessage && <div className="job-portal__feedback job-portal__feedback--error">{errorMessage}</div>}
           {jobCreated && (

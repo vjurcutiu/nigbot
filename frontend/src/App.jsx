@@ -9,6 +9,7 @@ import Marketplace from './components/marketplace/Marketplace';
 import Inbox from './components/chat/Inbox';
 import { Layout } from './components/ui/Layout';
 import JobPortal from './components/profiles/JobPortal';
+import JobPostPortal from './components/profiles/JobPostPortal';
 import ApplicationPortal from './components/marketplace/ApplicationPortal';
 import JobApplyForm from './components/marketplace/JobApplyForm';
 import { UserProvider, UserContext } from './contexts/UserContext';
@@ -36,9 +37,10 @@ function AppRoutes() {
         <Route path="/client" element={<RedirectToProfile role="client" />} />
         <Route path="/client/:userId" element={<ClientPortal editable={true} />} />
         <Route path="/client/:companyId/public" element={<ClientPortal editable={false} />} />
-        <Route path="/job/:jobId" element={<JobPortal />} />
-        <Route path="/jobs/:jobId" element={<JobPortal />} />
-        <Route path="/jobs/:jobId/apply" element={<JobApplyForm />} />
+      <Route path="/job/:jobId" element={<JobPortal />} />
+      <Route path="/jobs/:jobId" element={<JobPortal />} />
+      <Route path="/jobs/post" element={<JobPostPortal postMode={true} />} />
+      <Route path="/jobs/:jobId/apply" element={<JobApplyForm />} />
         <Route path="/applications/:applicationId" element={<ApplicationPortal />} />
       </Route>
     <Route element={<Layout allowAnyAuthenticated={true} />}>

@@ -212,8 +212,8 @@ export default function JobPortal() {
             <Button
               variant="default"
               onClick={() => {
-                const title = prompt('Enter job title:');
-                if (title) setJobTitle(title);
+                // Navigate to post job mode route
+                window.location.href = '/jobs/post';
               }}
               disabled={posting}
             >

@@ -122,8 +122,8 @@ export default function ClientPortal({ editable = true }) {
         <Button
           variant="default"
           onClick={() => {
-            const title = prompt('Enter job title:');
-            if (title) setJobTitle(title);
+            // Navigate to the new JobPostPortal component route
+            window.location.href = '/jobs/post';
           }}
           disabled={posting}
           className="client-portal-button mb-4"

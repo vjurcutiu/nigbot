@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import jobService from '../../services/jobService';
 import clientService from '../../services/clientService';
 import EditableProfileCard from './EditableProfileCard';
@@ -11,6 +11,7 @@ import './JobPortal.css';
 export default function JobPortal() {
   const { user } = useContext(UserContext);
   const { jobId } = useParams();
+  const navigate = useNavigate();
   const [jobData, setJobData] = useState(null);
   const [applications, setApplications] = useState([]);
   const [posting, setPosting] = useState(false);
@@ -142,6 +143,28 @@ export default function JobPortal() {
             </div>
           )}
         </>
+      )}
+
+      {jobData && (
+        <div className="job-portal__button-group">
+
+
+          <Button
+            onClick={() => {
+              if (jobData.company_id) {
+                if (user?.role === 'client' && user.company?.id === jobData.company_id) {
+                  // Logged in client is the owner of the job, navigate to private page
+                  navigate(`/client/${user.userId}`);
+                } else {
+                  // Otherwise navigate to public client portal
+                  navigate(`/client/${jobData.company_id}/public`);
+                }
+              }
+            }}
+          >
+            Go to Client Portal
+          </Button>
+        </div>
       )}
 
       {user.role === 'client' && fullCompany && (
